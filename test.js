@@ -547,7 +547,7 @@ function corregirTest() {
   // CAMBIO 3: Capturar fallos después de corregir
   fallosSesionDespues = 0;
   preguntasTest.forEach(p => {
-    fallosSesionDespues += p.fallos || 0;
+    fallosSesionDespues += p.fallada || p.fallos || 0;
   });
 
   // CAMBIO 3: limpieza visual para evitar radios fantasma
