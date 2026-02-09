@@ -79,7 +79,13 @@ window.actualizarFalladaUsuario = async function (preguntaId, valor) {
   if (!user) return;
 
   const ref = doc(db, "estadisticas", user.uid, "preguntas", preguntaId);
-  await setDoc(ref, { fallada: valor }, { merge: true });
+
+  try {
+    await setDoc(ref, { fallada: valor }, { merge: true });
+    console.log("Guardando fallo usuario:", preguntaId, valor);
+  } catch (e) {
+    console.error("Error guardando estadística usuario", e);
+  }
 };
 
 // Cargar estadísticas del usuario
@@ -88,13 +94,18 @@ window.cargarEstadisticasUsuario = async function () {
   if (!user) return {};
 
   const stats = {};
-  const snapshot = await getDocs(
-    collection(db, "estadisticas", user.uid, "preguntas")
-  );
 
-  snapshot.forEach(docSnap => {
-    stats[docSnap.id] = docSnap.data().fallada || 0;
-  });
+  try {
+    const snapshot = await getDocs(
+      collection(db, "estadisticas", user.uid, "preguntas")
+    );
+
+    snapshot.forEach(docSnap => {
+      stats[docSnap.id] = docSnap.data().fallada || 0;
+    });
+  } catch (e) {
+    console.error("Error cargando estadísticas usuario", e);
+  }
 
   return stats;
 };
