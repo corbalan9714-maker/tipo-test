@@ -445,21 +445,40 @@ function validarBorradoTema() {
   });
 }
 
-function controlarInputTema() {
+window.controlarInputTema = function () {
   const select = document.getElementById("temaExistente");
   const input = document.getElementById("tema");
 
   if (!select || !input) return;
 
   if (select.value) {
-    input.value = "";
+    input.value = select.value;
     input.disabled = true;
     input.placeholder = "Usando tema existente";
   } else {
     input.disabled = false;
+    input.value = "";
     input.placeholder = "Nuevo tema";
   }
 }
+
+// Exponer función para el HTML (onchange)
+window.usarTemaExistente = function () {
+  const select = document.getElementById("temaExistente");
+  const input = document.getElementById("tema");
+
+  if (!select || !input) return;
+
+  if (select.value) {
+    input.value = select.value;
+    input.disabled = true;
+    input.placeholder = "Usando tema existente";
+  } else {
+    input.disabled = false;
+    input.value = "";
+    input.placeholder = "Nuevo tema";
+  }
+};
 
 
 function renombrarTema() {

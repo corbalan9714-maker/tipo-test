@@ -164,5 +164,16 @@
 
     console.log("Firebase conectado");
   </script>
+  <script>
+  // Reenviar mensajes entre iframes (editor → test)
+  window.addEventListener("message", (e) => {
+    if (e.data && e.data.type === "BANCO_ACTUALIZADO") {
+      const iframeTest = document.getElementById("iframeTest");
+      if (iframeTest && iframeTest.contentWindow) {
+        iframeTest.contentWindow.postMessage(e.data, "*");
+      }
+    }
+  });
+  </script>
 </body>
 </html>
