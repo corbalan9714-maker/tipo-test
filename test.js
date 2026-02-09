@@ -632,8 +632,9 @@ function actualizarPreguntaFallada(pregunta, acertada) {
 
   pregunta.fallada = nuevo;
 
-  // Sincronizar en Firebase por usuario
+  // Sincronizar en Firebase por usuario SIEMPRE que exista id
   if (pregunta.id && window.actualizarFalladaUsuario) {
+    console.log("Guardando fallo usuario:", pregunta.id, nuevo);
     window.actualizarFalladaUsuario(pregunta.id, nuevo);
   }
 }
