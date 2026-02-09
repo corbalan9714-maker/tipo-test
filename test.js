@@ -703,7 +703,7 @@ function resetearFallosPorTema() {
     });
   }
 
-  guardarBanco();
+  // guardarBanco(); // removed per instructions
 
   alert(`Estadísticas del tema "${tema}" restablecidas.`);
 
