@@ -36,3 +36,9 @@ if (btnEditor) {
 if (btnTest) {
   btnTest.addEventListener("click", mostrarTest);
 }
+
+// ===== LOGIN BOTÓN GOOGLE =====
+const btnLogin = document.getElementById("btnLogin");
+if (btnLogin && window.loginConGoogle) {
+  btnLogin.addEventListener("click", window.loginConGoogle);
+}
