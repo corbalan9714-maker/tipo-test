@@ -168,8 +168,21 @@ document.addEventListener("DOMContentLoaded", async () => {
 // 🔄 Sincronización directa con el editor (misma página)
 window.addEventListener("message", (e) => {
   if (e.data && e.data.type === "BANCO_ACTUALIZADO") {
-    // banco ya se sincroniza desde Firebase, solo repintar
-    pintarCheckboxesTemas();
+    const zonaTest = document.getElementById("zonaTest");
+    const resumen = document.getElementById("resumenTest");
+
+    const testVisible = zonaTest && zonaTest.style.display === "block";
+    const resumenVisible = resumen && resumen.style.display === "block";
+
+    // Si estamos en pantalla de selección, reconstruir todo
+    if (!testVisible && !resumenVisible) {
+      initTest();
+    } else {
+      // Si estamos en test o resumen, solo actualizar contadores
+      if (typeof pintarCheckboxesTemas === "function") {
+        pintarCheckboxesTemas();
+      }
+    }
   }
 });
 
