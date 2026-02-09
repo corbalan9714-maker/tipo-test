@@ -82,6 +82,19 @@ window.addEventListener("storage", (e) => {
 
 function initTest() {
   asegurarTemaFalladas();
+
+  // Reconstruir el tema de preguntas falladas desde los datos reales
+  banco["__falladas__"] = [];
+  Object.keys(banco).forEach(tema => {
+    if (tema === "__falladas__") return;
+    banco[tema].forEach(p => {
+      const fallos = Number(p.fallada) || 0;
+      if (fallos > 0) {
+        banco["__falladas__"].push(p);
+      }
+    });
+  });
+
   guardarBancoLocal();
 
   cargarTemas();
