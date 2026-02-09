@@ -66,20 +66,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     const estadisticas = await window.cargarEstadisticasUsuario();
     console.log("Estadísticas cargadas:", estadisticas);
 
-    const statsPreguntas = estadisticas?.preguntas || {};
-
     Object.keys(banco).forEach(tema => {
       if (tema === "__falladas__") return;
       banco[tema].forEach(p => {
         if (!p.id) return;
 
-        const stat = statsPreguntas[p.id];
-
-        // Formato esperado: { preguntas: { id: { fallos: n } } }
-        if (stat && typeof stat === "object") {
-          p.fallada = stat.fallos || 0;
-        } else if (typeof stat === "number") {
-          p.fallada = stat;
+        // Si existe la pregunta en las estadísticas del usuario, tiene fallos
+        if (estadisticas && estadisticas[p.id]) {
+          p.fallada = estadisticas[p.id];
         } else {
           p.fallada = 0;
         }
