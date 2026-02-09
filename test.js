@@ -598,6 +598,9 @@ function asegurarTemaFalladas() {
 function actualizarPreguntaFallada(pregunta, acertada) {
   // Solo guardar fallo por usuario en Firebase
   if (!acertada && pregunta && pregunta.id) {
+    // Incremento local para que el contador se actualice sin recargar
+    pregunta.fallada = (pregunta.fallada || 0) + 1;
+
     if (window.guardarFalloUsuario) {
       console.log("Guardando fallo en Firebase para:", pregunta.id);
       window.guardarFalloUsuario(pregunta.id);
