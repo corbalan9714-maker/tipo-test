@@ -720,11 +720,11 @@ function actualizarPreguntaFallada(pregunta, acertada) {
     lista.push(existente);
   }
 
-  if (acertada) {
-    existente.fallos = Math.max(0, existente.fallos - 1);
-  } else {
+  if (!acertada) {
+    // Solo incrementamos cuando se falla
     existente.fallos += 1;
   }
+  // Si se acierta, no se modifica el contador para mantener el historial
 
   // Actualizar también el contador en la pregunta original
   if (typeof pregunta.fallos === "number") {
