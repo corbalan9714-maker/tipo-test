@@ -58,6 +58,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (window.cargarDesdeFirebase) {
     banco = await window.cargarDesdeFirebase();
     console.log("Banco cargado desde Firebase (test)");
+
+    // Cargar estadísticas del usuario
+    if (window.cargarEstadisticasUsuario) {
+      const stats = await window.cargarEstadisticasUsuario();
+
+      // Aplicar fallos al banco
+      Object.keys(banco).forEach(tema => {
+        if (tema === "__falladas__") return;
+        banco[tema].forEach(p => {
+          p.fallada = stats[p.id] || 0;
+        });
+      });
+    }
+
   } else {
     banco = cargarBancoLocal();
   }
@@ -618,9 +632,9 @@ function actualizarPreguntaFallada(pregunta, acertada) {
 
   pregunta.fallada = nuevo;
 
-  // Sincronizar en Firebase
-  if (pregunta.id && window.actualizarFallada) {
-    window.actualizarFallada(pregunta.id, nuevo);
+  // Sincronizar en Firebase por usuario
+  if (pregunta.id && window.actualizarFalladaUsuario) {
+    window.actualizarFalladaUsuario(pregunta.id, nuevo);
   }
 }
 
@@ -687,9 +701,9 @@ function resetearSoloFalladas() {
       if ((p.fallada || 0) > 0) {
         p.fallada = 0;
 
-        // Sincronizar con Firebase
-        if (p.id && window.actualizarFallada) {
-          window.actualizarFallada(p.id, 0);
+        // Sincronizar con Firebase por usuario
+        if (p.id && window.actualizarFalladaUsuario) {
+          window.actualizarFalladaUsuario(p.id, 0);
         }
       }
     });
@@ -730,9 +744,9 @@ function resetearFallosPorTema() {
     if ((p.fallada || 0) > 0) {
       p.fallada = 0;
 
-      // Sincronizar con Firebase
-      if (p.id && window.actualizarFallada) {
-        window.actualizarFallada(p.id, 0);
+      // Sincronizar con Firebase por usuario
+      if (p.id && window.actualizarFalladaUsuario) {
+        window.actualizarFalladaUsuario(p.id, 0);
       }
     }
   });
