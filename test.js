@@ -618,9 +618,9 @@ function actualizarPreguntaFallada(pregunta, acertada) {
 
   pregunta.fallada = nuevo;
 
-  // Sincronizar en Firebase
-  if (pregunta.id && window.actualizarFallada) {
-    window.actualizarFallada(pregunta.id, nuevo);
+  // Sincronizar en Firebase (estadísticas por usuario)
+  if (!acertada && pregunta.id && window.guardarFalloUsuario) {
+    window.guardarFalloUsuario(pregunta.id);
   }
 }
 
