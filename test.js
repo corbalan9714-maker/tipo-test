@@ -89,20 +89,21 @@ async function initTest() {
     if (tema === "__falladas__") return;
 
     banco[tema].forEach(p => {
-      if ((p.fallos || p.fallada || 0) > 0) {
+      const fallos = p.fallada || p.fallos || 0;
+      if (fallos > 0) {
         banco["__falladas__"].push({
           pregunta: p.pregunta,
           opciones: p.opciones,
           correcta: p.correcta,
           feedback: p.feedback || "",
-          fallos: p.fallos || p.fallada || 0,
+          fallos: fallos,
           id: p.id
         });
       }
     });
   });
 
-  guardarBanco();
+  // No guardar en localStorage para no sobrescribir datos de Firebase
 
   cargarTemas();
 
