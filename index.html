@@ -166,23 +166,23 @@
   </script>
   <script>
 // Forzar refresco del test al cambiar a la pestaña Test
-const btnEditor = document.getElementById("btnEditor");
-const btnTest = document.getElementById("btnTest");
+const btnEditorTab = document.getElementById("btnEditor");
+const btnTestTab = document.getElementById("btnTest");
 const iframeEditor = document.getElementById("iframeEditor");
 const iframeTest = document.getElementById("iframeTest");
 
-btnEditor.onclick = () => {
+btnEditorTab.onclick = () => {
   iframeEditor.style.display = "block";
   iframeTest.style.display = "none";
-  btnEditor.classList.add("activo");
-  btnTest.classList.remove("activo");
+  btnEditorTab.classList.add("activo");
+  btnTestTab.classList.remove("activo");
 };
 
-btnTest.onclick = () => {
+btnTestTab.onclick = () => {
   iframeEditor.style.display = "none";
   iframeTest.style.display = "block";
-  btnEditor.classList.remove("activo");
-  btnTest.classList.add("activo");
+  btnEditorTab.classList.remove("activo");
+  btnTestTab.classList.add("activo");
 
   // Forzar actualización del test
   if (iframeTest.contentWindow) {
