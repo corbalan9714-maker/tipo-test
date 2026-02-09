@@ -1,3 +1,9 @@
+// Inicializar auth para usar estadísticas por usuario
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
+const auth = getAuth();
+window.auth = auth;
+
 // === Mostrar opciones corregidas: a), b), c), d) con colores ===
 function renderizarOpcionesCorregidas(p) {
   let html = "";
