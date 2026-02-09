@@ -1063,3 +1063,12 @@ function actualizarEstadoBotonEmpezar() {
     tooltip.style.display = habilitado ? "none" : "block";
   }
 }
+// 🔄 Refresco forzado desde el index al cambiar de pestaña
+window.addEventListener("message", (e) => {
+  if (e.data && e.data.type === "REFRESCAR_TEST") {
+    console.log("[TEST] Refresco forzado desde index");
+    if (typeof initTest === "function") {
+      initTest();
+    }
+  }
+});
