@@ -608,17 +608,8 @@ function asegurarTemaFalladas() {
 }
 
 function actualizarPreguntaFallada(pregunta, acertada) {
-  const actual = Number(pregunta.fallada) || 0;
-  let nuevo = actual;
-
-  // Solo aumentar cuando se falla. Nunca reducir automáticamente.
-  if (!acertada) {
-    nuevo = actual + 1;
-  }
-
-  pregunta.fallada = nuevo;
-
-  // Sincronizar en Firebase (estadísticas por usuario)
+  // No usar contadores locales en la pregunta
+  // Solo guardar el fallo por usuario en Firebase
   if (!acertada && pregunta.id && window.guardarFalloUsuario) {
     window.guardarFalloUsuario(pregunta.id);
   }
