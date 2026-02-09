@@ -553,7 +553,7 @@ function corregirTest() {
     } else {
       div.style.background = "#e6ffe6";
       preguntasAcertadas.push(resultado);
-      actualizarPreguntaFallada(p, true);
+      // No actualizar contador si acierta para mantener historial de fallos
     }
 
     if (p.feedback) {
@@ -704,50 +704,25 @@ function asegurarTemaFalladas() {
 }
 
 function actualizarPreguntaFallada(pregunta, acertada) {
-  asegurarTemaFalladas();
+  // Obtener contador actual desde Firebase/local
+  const actual = pregunta.fallada || 0;
 
-  const lista = banco["__falladas__"];
-  let existente = lista.find(p => p.pregunta === pregunta.pregunta);
-
-  if (!existente) {
-    existente = {
-      pregunta: pregunta.pregunta,
-      opciones: pregunta.opciones,
-      correcta: pregunta.correcta,
-      feedback: pregunta.feedback || "",
-      fallos: 0
-    };
-    lista.push(existente);
-  }
+  let nuevo = actual;
 
   if (!acertada) {
     // Solo incrementamos cuando se falla
-    existente.fallos += 1;
+    nuevo = actual + 1;
   }
-  // Si se acierta, no se modifica el contador para mantener el historial
+  // Si se acierta, no se modifica el contador
 
-  // Actualizar también el contador en la pregunta original
-  if (typeof pregunta.fallos === "number") {
-    pregunta.fallos = existente.fallos;
-  } else {
-    pregunta.fallos = existente.fallos;
-  }
-
-  // Mantener compatibilidad con el campo de Firebase
-  pregunta.fallada = existente.fallos;
+  // Actualizar en el objeto local
+  pregunta.fallada = nuevo;
 
   // Sincronizar con Firebase si existe la función y la pregunta tiene id
-  if (pregunta.id) {
-    if (window.actualizarFallada) {
-      console.log("Enviando fallos a Firebase:", pregunta.id, existente.fallos);
-      window.actualizarFallada(pregunta.id, existente.fallos);
-    } else {
-      console.warn("actualizarFallada no está disponible en window");
-    }
-  } else {
-    console.warn("Pregunta sin id, no se puede sincronizar con Firebase");
+  if (pregunta.id && window.actualizarFallada) {
+    console.log("Enviando fallos a Firebase:", pregunta.id, nuevo);
+    window.actualizarFallada(pregunta.id, nuevo);
   }
-
 }
 
 function seleccionarPreguntasPonderadas(preguntas, num) {
