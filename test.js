@@ -266,7 +266,8 @@ function iniciarTest() {
     zonaTestCambio.classList.add("fade-in");
   }
 
-  banco = cargarBanco();
+  // No recargar desde local: mantener banco sincronizado con Firebase
+  // banco ya viene de Firebase en el arranque
 
   const zonaTest = document.getElementById("zonaTest");
   const corregirBtn = document.getElementById("corregirBtn");
@@ -455,7 +456,8 @@ function corregirTest() {
     }
   });
 
-  guardarBanco();
+  // Guardado local solo como copia de seguridad
+  guardarBancoLocal();
   if (corregirBtn) {
     corregirBtn.style.display = "none";
   }
