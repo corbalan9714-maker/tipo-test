@@ -167,7 +167,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 // 🔄 Sincronización directa con el editor (misma página)
 window.addEventListener("message", (e) => {
+  console.log("[TEST] Mensaje recibido:", e.data);
+
   if (e.data && e.data.type === "BANCO_ACTUALIZADO") {
+    console.log("[TEST] BANCO_ACTUALIZADO procesado");
     const zonaTest = document.getElementById("zonaTest");
     const resumen = document.getElementById("resumenTest");
 
