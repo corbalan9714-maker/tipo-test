@@ -337,9 +337,28 @@ async function iniciarTest() {
       });
     });
 
-    const falladas = banco["__falladas__"];
+    // Recalcular directamente desde el banco por seguridad
+    let falladas = [];
+
+    Object.keys(banco).forEach(tema => {
+      if (tema === "__falladas__") return;
+
+      banco[tema].forEach(p => {
+        const fallos = p.fallada || p.fallos || 0;
+        if (fallos > 0) {
+          falladas.push(p);
+        }
+      });
+    });
 
     if (falladas.length === 0) {
+      console.warn("Lista de falladas vacía, reconstruyendo desde contador");
+
+      // Intento alternativo: usar directamente el tema __falladas__
+      falladas = banco["__falladas__"] || [];
+    }
+
+    if (!falladas || falladas.length === 0) {
       alert("No hay preguntas falladas todavía");
       return;
     }
