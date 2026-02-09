@@ -610,7 +610,7 @@ function seleccionarPreguntasPonderadas(preguntas, num) {
   let pool = [];
 
   preguntas.forEach(p => {
-    const peso = 1 + (p.fallada || 0);
+    const peso = 1 + (p.fallos || 0);
     for (let i = 0; i < peso; i++) {
       pool.push(p);
     }
@@ -642,7 +642,7 @@ function resetearEstadisticas() {
   // Resetear contadores de todas las preguntas falladas
   if (banco["__falladas__"]) {
     banco["__falladas__"].forEach(p => {
-      p.fallada = 0;
+      p.fallos = 0;
     });
   }
 
@@ -662,7 +662,7 @@ function resetearSoloFalladas() {
   }
 
   banco["__falladas__"] = [];
-  guardarBancoLocal();
+  guardarBanco();
   alert("Preguntas más falladas reseteadas");
 
   if (typeof pintarCheckboxesTemas === "function") {
@@ -691,8 +691,8 @@ function resetearFallosPorTema() {
 
   // Resetear fallos de las preguntas del tema
   banco[tema].forEach(p => {
-    if (typeof p.fallada === "number") {
-      p.fallada = 0;
+    if (typeof p.fallos === "number") {
+      p.fallos = 0;
     }
   });
 
