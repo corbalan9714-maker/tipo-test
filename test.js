@@ -727,8 +727,13 @@ function resetearFallosPorTema() {
 
   // Resetear fallos de las preguntas del tema
   banco[tema].forEach(p => {
-    if (typeof p.fallada === "number") {
+    if ((p.fallada || 0) > 0) {
       p.fallada = 0;
+
+      // Sincronizar con Firebase
+      if (p.id && window.actualizarFallada) {
+        window.actualizarFallada(p.id, 0);
+      }
     }
   });
 
@@ -739,7 +744,19 @@ function resetearFallosPorTema() {
     });
   }
 
-  // guardarBanco(); // removed per instructions
+  // Reconstruir tema de falladas tras el reset
+  banco["__falladas__"] = [];
+  Object.keys(banco).forEach(t => {
+    if (t === "__falladas__") return;
+    banco[t].forEach(p => {
+      const fallos = Number(p.fallada) || 0;
+      if (fallos > 0) {
+        banco["__falladas__"].push(p);
+      }
+    });
+  });
+
+  guardarBancoLocal();
 
   alert(`Estadísticas del tema "${tema}" restablecidas.`);
 
