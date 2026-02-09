@@ -55,79 +55,9 @@ let preguntasEnBlanco = [];
 
 
 document.addEventListener("DOMContentLoaded", async () => {
-  if (window.db && window.collection && window.onSnapshot) {
-    const colRef = window.collection(window.db, "preguntas");
-
-    window.onSnapshot(colRef, async (snapshot) => {
-      const nuevoBanco = {};
-
-      snapshot.forEach(docSnap => {
-        const data = docSnap.data();
-        const id = docSnap.id;
-
-        if (!nuevoBanco[data.tema]) nuevoBanco[data.tema] = [];
-
-        nuevoBanco[data.tema].push({
-          id: id,
-          pregunta: data.pregunta,
-          opciones: data.opciones,
-          correcta: data.correcta,
-          feedback: data.feedback || "",
-          fallada: 0
-        });
-      });
-
-      banco = nuevoBanco;
-      console.log("Banco actualizado en tiempo real");
-
-      // Recargar estadísticas del usuario tras actualizar el banco
-      if (window.cargarEstadisticasUsuario) {
-        const estadisticas = await window.cargarEstadisticasUsuario();
-        Object.keys(banco).forEach(tema => {
-          if (tema === "__falladas__") return;
-          banco[tema].forEach(p => {
-            if (estadisticas && estadisticas[p.id]) {
-              p.fallada = estadisticas[p.id];
-            } else {
-              p.fallada = 0;
-            }
-          });
-        });
-      }
-
-      // Reconstruir falladas y repintar temas si no hay test activo
-      banco["__falladas__"] = [];
-      Object.keys(banco).forEach(tema => {
-        if (tema === "__falladas__") return;
-        banco[tema].forEach(p => {
-          if ((p.fallada || 0) > 0) {
-            banco["__falladas__"].push(p);
-          }
-        });
-      });
-
-      // Actualizar temas y contadores
-      if (typeof cargarTemas === "function") {
-        cargarTemas();
-      }
-
-      // Si no hay test en curso, reconstruir pantalla inicial y contadores
-      const zonaTest = document.getElementById("zonaTest");
-      const resumen = document.getElementById("resumenTest");
-
-      const testVisible = zonaTest && zonaTest.style.display === "block";
-      const resumenVisible = resumen && resumen.style.display === "block";
-
-      // Solo reconstruir si estamos en la pantalla de selección
-      if (!testVisible && !resumenVisible) {
-        initTest();
-      } else {
-        // Si estamos viendo resumen o test, solo actualizar contadores
-        if (typeof pintarCheckboxesTemas === "function") {
-          pintarCheckboxesTemas();
-        }
-      }
-    });
+  if (window.cargarDesdeFirebase) {
+    banco = await window.cargarDesdeFirebase();
+    console.log("Banco cargado desde Firebase (test)");
   } else {
     banco = cargarBancoLocal();
   }
@@ -167,40 +97,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 // 🔄 Sincronización directa con el editor (misma página)
 window.addEventListener("message", (e) => {
-  console.log("[TEST] Mensaje recibido:", e.data);
-
   if (e.data && e.data.type === "BANCO_ACTUALIZADO") {
-    console.log("[TEST] BANCO_ACTUALIZADO procesado");
-    const zonaTest = document.getElementById("zonaTest");
-    const resumen = document.getElementById("resumenTest");
-
-    const testVisible = zonaTest && zonaTest.style.display === "block";
-    const resumenVisible = resumen && resumen.style.display === "block";
-
-    // Si estamos en pantalla de selección, reconstruir todo
-    if (!testVisible && !resumenVisible) {
-      initTest();
-    } else {
-      // Si estamos en test o resumen, solo actualizar contadores
-      if (typeof pintarCheckboxesTemas === "function") {
-        pintarCheckboxesTemas();
-      }
-    }
-  }
-});
-
-// 🔄 Forzar actualización de contadores al volver a la pestaña Test
-window.addEventListener("focus", () => {
-  if (typeof pintarCheckboxesTemas === "function") {
+    // banco ya se sincroniza desde Firebase, solo repintar
     pintarCheckboxesTemas();
-  }
-});
-
-document.addEventListener("visibilitychange", () => {
-  if (!document.hidden) {
-    if (typeof pintarCheckboxesTemas === "function") {
-      pintarCheckboxesTemas();
-    }
   }
 });
 
@@ -1063,12 +962,3 @@ function actualizarEstadoBotonEmpezar() {
     tooltip.style.display = habilitado ? "none" : "block";
   }
 }
-// 🔄 Refresco forzado desde el index al cambiar de pestaña
-window.addEventListener("message", (e) => {
-  if (e.data && e.data.type === "REFRESCAR_TEST") {
-    console.log("[TEST] Refresco forzado desde index");
-    if (typeof initTest === "function") {
-      initTest();
-    }
-  }
-});
