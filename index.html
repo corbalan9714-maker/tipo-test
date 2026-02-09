@@ -165,6 +165,36 @@
     console.log("Firebase conectado");
   </script>
   <script>
+// Forzar refresco del test al cambiar a la pestaña Test
+const btnEditor = document.getElementById("btnEditor");
+const btnTest = document.getElementById("btnTest");
+const iframeEditor = document.getElementById("iframeEditor");
+const iframeTest = document.getElementById("iframeTest");
+
+btnEditor.onclick = () => {
+  iframeEditor.style.display = "block";
+  iframeTest.style.display = "none";
+  btnEditor.classList.add("activo");
+  btnTest.classList.remove("activo");
+};
+
+btnTest.onclick = () => {
+  iframeEditor.style.display = "none";
+  iframeTest.style.display = "block";
+  btnEditor.classList.remove("activo");
+  btnTest.classList.add("activo");
+
+  // Forzar actualización del test
+  if (iframeTest.contentWindow) {
+    iframeTest.contentWindow.postMessage({ type: "REFRESCAR_TEST" }, "*");
+  }
+};
+
+// Estado inicial
+iframeEditor.style.display = "block";
+iframeTest.style.display = "none";
+  </script>
+  <script>
   // Reenviar mensajes entre iframes (editor → test)
   window.addEventListener("message", (e) => {
     if (e.data && e.data.type === "BANCO_ACTUALIZADO") {
