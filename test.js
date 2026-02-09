@@ -320,9 +320,6 @@ function iniciarTest() {
 
     // CAMBIO 2A: Capturar fallos antes del test (modo __falladas__)
     fallosSesionAntes = 0;
-    preguntasTest.forEach(p => {
-      fallosSesionAntes += p.fallada || 0;
-    });
 
     zonaTest.innerHTML = "";
     zonaTest.style.display = "block";
@@ -375,9 +372,6 @@ function iniciarTest() {
   }
   // CAMBIO 2B: Capturar fallos antes del test (modo normal)
   fallosSesionAntes = 0;
-  preguntasTest.forEach(p => {
-    fallosSesionAntes += p.fallada || 0;
-  });
 
   preguntasTest.forEach((p, i) => {
     zonaTest.appendChild(crearBloquePregunta(p, i));
@@ -473,10 +467,7 @@ function corregirTest() {
   if (pantallaSeleccion) pantallaSeleccion.style.display = "none";
 
   // CAMBIO 3: Capturar fallos después de corregir
-  fallosSesionDespues = 0;
-  preguntasTest.forEach(p => {
-    fallosSesionDespues += p.fallada || 0;
-  });
+  fallosSesionDespues = preguntasFalladas.length;
 
   // CAMBIO 3: limpieza visual para evitar radios fantasma
   zonaTest.innerHTML = "";
