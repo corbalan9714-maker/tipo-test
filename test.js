@@ -422,7 +422,7 @@ async function iniciarTest() {
   // CAMBIO 2B: Capturar fallos antes del test (modo normal)
   fallosSesionAntes = 0;
   preguntasTest.forEach(p => {
-    fallosSesionAntes += p.fallos || 0;
+    fallosSesionAntes += (p.fallada || p.fallos || 0);
   });
 
   preguntasTest.forEach((p, i) => {
@@ -670,7 +670,6 @@ function actualizarPreguntaFallada(pregunta, acertada) {
     console.warn("Pregunta sin id, no se puede sincronizar con Firebase");
   }
 
-  guardarBanco();
 }
 
 function seleccionarPreguntasPonderadas(preguntas, num) {
