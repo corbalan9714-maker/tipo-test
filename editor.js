@@ -467,6 +467,9 @@ window.usarTemaExistente = function () {
 };
 
 
+window.controlarInputTema = controlarInputTema;
+
+
 function renombrarTema() {
   const select = document.getElementById("temaRenombrar");
   const input = document.getElementById("nuevoNombreTema");
