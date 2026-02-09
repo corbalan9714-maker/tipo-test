@@ -62,12 +62,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Cargar estadísticas del usuario
     if (window.cargarEstadisticasUsuario) {
       const stats = await window.cargarEstadisticasUsuario();
+      console.log("Estadísticas cargadas:", stats);
 
       // Aplicar fallos al banco
       Object.keys(banco).forEach(tema => {
         if (tema === "__falladas__") return;
         banco[tema].forEach(p => {
-          p.fallada = stats[p.id] || 0;
+          if (p.id && stats[p.id] !== undefined) {
+            p.fallada = stats[p.id];
+          } else {
+            p.fallada = 0;
+          }
         });
       });
     }
