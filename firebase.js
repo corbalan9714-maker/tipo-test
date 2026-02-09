@@ -71,3 +71,37 @@ export async function eliminarPreguntaFirebase(id) {
 }
 
 window.eliminarPreguntaFirebase = eliminarPreguntaFirebase;
+
+// ===============================
+// ESTADÍSTICAS POR USUARIO
+// ===============================
+
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { doc as docStats, getDoc, setDoc, updateDoc as updateDocStats } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const auth = getAuth(app);
+
+// Guardar fallo por usuario
+window.guardarFalloUsuario = async function (preguntaId) {
+  try {
+    const user = auth.currentUser;
+    if (!user) {
+      console.warn("No hay usuario activo");
+      return;
+    }
+
+    const ref = docStats(db, "estadisticas", user.uid, "preguntas", preguntaId);
+    const snap = await getDoc(ref);
+
+    if (snap.exists()) {
+      const actual = snap.data().fallos || 0;
+      await updateDocStats(ref, { fallos: actual + 1 });
+    } else {
+      await setDoc(ref, { fallos: 1 });
+    }
+
+    console.log("Fallo guardado en Firebase:", user.uid, preguntaId);
+  } catch (e) {
+    console.error("Error guardando fallo usuario:", e);
+  }
+};
