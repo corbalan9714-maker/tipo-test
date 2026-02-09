@@ -608,8 +608,12 @@ function asegurarTemaFalladas() {
 }
 
 function actualizarPreguntaFallada(pregunta, acertada) {
-  // No usar contadores locales en la pregunta
-  // Solo guardar el fallo por usuario en Firebase
+  // Eliminar cualquier contador local antiguo
+  if (pregunta && pregunta.fallada !== undefined) {
+    delete pregunta.fallada;
+  }
+
+  // Guardar fallo solo por usuario en Firebase
   if (!acertada && pregunta.id && window.guardarFalloUsuario) {
     window.guardarFalloUsuario(pregunta.id);
   }
