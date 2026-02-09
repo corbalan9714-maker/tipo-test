@@ -48,13 +48,9 @@ export async function cargarDesdeFirebase() {
 }
 
 export async function actualizarFallada(id, nuevoValor) {
-  try {
-    console.log("Actualizando fallos en Firebase", id, nuevoValor);
-    const ref = doc(db, "preguntas", id);
-    await updateDoc(ref, { fallada: nuevoValor });
-    console.log("Fallada actualizada en Firebase");
-  } catch (err) {
-    console.error("Error al actualizar fallada", err);
+  // Redirige al sistema por usuario
+  if (window.actualizarFalladaUsuario) {
+    await window.actualizarFalladaUsuario(id, nuevoValor);
   }
 }
 
