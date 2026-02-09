@@ -39,7 +39,6 @@ export async function cargarDesdeFirebase() {
       pregunta: data.pregunta,
       opciones: data.opciones,
       correcta: data.correcta,
-      fallada: data.fallada || 0,
       feedback: data.feedback || ""
     });
   });
@@ -47,19 +46,7 @@ export async function cargarDesdeFirebase() {
   return banco;
 }
 
-export async function actualizarFallada(id, nuevoValor) {
-  try {
-    console.log("Actualizando fallos en Firebase", id, nuevoValor);
-    const ref = doc(db, "preguntas", id);
-    await updateDoc(ref, { fallada: nuevoValor });
-    console.log("Fallada actualizada en Firebase");
-  } catch (err) {
-    console.error("Error al actualizar fallada", err);
-  }
-}
-
 window.cargarDesdeFirebase = cargarDesdeFirebase;
-window.actualizarFallada = actualizarFallada;
 
 export async function eliminarPreguntaFirebase(id) {
   try {

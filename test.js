@@ -608,14 +608,14 @@ function asegurarTemaFalladas() {
 }
 
 function actualizarPreguntaFallada(pregunta, acertada) {
-  // Eliminar cualquier contador local antiguo
-  if (pregunta && pregunta.fallada !== undefined) {
-    delete pregunta.fallada;
-  }
-
-  // Guardar fallo solo por usuario en Firebase
-  if (!acertada && pregunta.id && window.guardarFalloUsuario) {
-    window.guardarFalloUsuario(pregunta.id);
+  // Solo guardar fallo por usuario en Firebase
+  if (!acertada && pregunta && pregunta.id) {
+    if (window.guardarFalloUsuario) {
+      console.log("Guardando fallo en Firebase para:", pregunta.id);
+      window.guardarFalloUsuario(pregunta.id);
+    } else {
+      console.error("guardarFalloUsuario no está disponible");
+    }
   }
 }
 
