@@ -358,30 +358,76 @@ function iniciarTest() {
   let poolPreguntas = [];
   let num = parseInt(document.getElementById("numPreguntas").value);
 
+  const repasoActivo = document.getElementById("modoRepasoInteligente")?.checked;
+  const repasoTipo = document.querySelector("input[name='repasoTipo']:checked")?.value || "global";
+
+  // Construir pool base por temas seleccionados
   temasSeleccionados.forEach(t => {
     if (banco[t]) {
       poolPreguntas = poolPreguntas.concat(banco[t]);
     }
   });
-  if (isNaN(num) || num <= 0) {
-    num = poolPreguntas.length;
-  }
 
-  if (poolPreguntas.length === 0) {
-    alert("No hay preguntas en los temas seleccionados");
-    return;
-  }
+  if (repasoActivo) {
+    let falladas = [];
+    let nuevas = [];
 
-  if (modoSimulacro) {
-    preguntasTest = poolPreguntas
-      .sort(() => Math.random() - 0.5)
-      .slice(0, num);
+    if (repasoTipo === "global") {
+      // Todas las falladas del banco
+      Object.keys(banco).forEach(tema => {
+        if (tema === "__falladas__") return;
+        banco[tema].forEach(p => {
+          if ((p.fallada || 0) > 0) falladas.push(p);
+          else nuevas.push(p);
+        });
+      });
+    } else {
+      // Solo falladas de los temas seleccionados
+      temasSeleccionados.forEach(t => {
+        if (banco[t]) {
+          banco[t].forEach(p => {
+            if ((p.fallada || 0) > 0) falladas.push(p);
+            else nuevas.push(p);
+          });
+        }
+      });
+    }
+
+    if (isNaN(num) || num <= 0) {
+      num = falladas.length + nuevas.length;
+    }
+
+    const numFalladas = Math.round(num * 0.7);
+    const numNuevas = num - numFalladas;
+
+    const seleccionFalladas = seleccionarPreguntasPonderadas(falladas, numFalladas);
+    const seleccionNuevas = seleccionarPreguntasPonderadas(nuevas, numNuevas);
+
+    preguntasTest = [...seleccionFalladas, ...seleccionNuevas]
+      .sort(() => Math.random() - 0.5);
+
   } else {
-    preguntasTest = seleccionarPreguntasPonderadas(
-      poolPreguntas,
-      num
-    );
+    if (isNaN(num) || num <= 0) {
+      num = poolPreguntas.length;
+    }
+
+    if (poolPreguntas.length === 0) {
+      alert("No hay preguntas en los temas seleccionados");
+      return;
+    }
+
+    if (modoSimulacro) {
+      preguntasTest = poolPreguntas
+        .sort(() => Math.random() - 0.5)
+        .slice(0, num);
+    } else {
+      preguntasTest = seleccionarPreguntasPonderadas(
+        poolPreguntas,
+        num
+      );
+    }
   }
+
   // CAMBIO 2B: Capturar fallos antes del test (modo normal)
   fallosSesionAntes = 0;
   preguntasTest.forEach(p => {
