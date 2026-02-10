@@ -19,15 +19,13 @@ function mostrarEditor() {
 // Mostrar Test
 function mostrarTest() {
   if (iframeEditor) iframeEditor.style.display = "none";
-  if (iframeTest) iframeTest.style.display = "block";
+  if (iframeTest) {
+    iframeTest.style.display = "block";
+    iframeTest.src = iframeTest.src; // fuerza recarga del test
+  }
 
   if (btnTest) btnTest.classList.add("activo");
   if (btnEditor) btnEditor.classList.remove("activo");
-
-  // Avisar al test que se active y recargue el banco
-  if (iframeTest && iframeTest.contentWindow) {
-    iframeTest.contentWindow.postMessage({ type: "ACTIVAR_TEST" }, "*");
-  }
 }
 
 // Estado inicial

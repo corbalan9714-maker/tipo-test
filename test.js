@@ -76,8 +76,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 // 🔄 Sincronización directa con el editor (misma página)
 window.addEventListener("message", async (e) => {
-  if (e.data && e.data.type === "BANCO_ACTUALIZADO") {
-    // pequeño retraso para que Firebase termine de sincronizar
+  if (!e.data) return;
+
+  // Mensaje desde el editor: banco actualizado
+  if (e.data.type === "BANCO_ACTUALIZADO") {
     setTimeout(async () => {
       if (window.cargarDesdeFirebase) {
         banco = await window.cargarDesdeFirebase();
@@ -85,6 +87,15 @@ window.addEventListener("message", async (e) => {
       }
       pintarCheckboxesTemas();
     }, 400);
+  }
+
+  // Mensaje al activar la pestaña Test
+  if (e.data.type === "ACTIVAR_TEST") {
+    if (window.cargarDesdeFirebase) {
+      banco = await window.cargarDesdeFirebase();
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(banco));
+    }
+    pintarCheckboxesTemas();
   }
 });
 
