@@ -485,8 +485,19 @@ button[onclick*="blanco"] {
       display: none;
     }
 
+</style>
+    /* Botón empezar test solo en pantalla inicial */
+    #pantallaSeleccion #btnEmpezarTest {
+      position: sticky;
+      bottom: 40px;
+      z-index: 20;
+    }
+
+    /* Botón corregir solo durante el test */
     #corregirBtn {
-      display: none;
+      position: sticky;
+      bottom: 40px;
+      z-index: 20;
     }
 </style>
 </head>
