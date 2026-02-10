@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBQw64gv58J684nbD1QIAqkrIPkbVg_8DU",
@@ -50,6 +50,16 @@ export async function actualizarFallada(id, nuevoValor) {
   try {
     console.log("Actualizando fallos en Firebase", id, nuevoValor);
     const ref = doc(db, "preguntas", id);
+
+    const snap = await getDoc(ref);
+
+    // Si el documento no existe, no hacemos nada
+    if (!snap.exists()) {
+      console.warn("Documento no existe, se ignora:", id);
+      return;
+    }
+
+    // Si existe, actualizamos normalmente
     await updateDoc(ref, { fallada: nuevoValor });
     console.log("Fallada actualizada en Firebase");
   } catch (err) {
