@@ -21,7 +21,10 @@ function mostrarTest() {
   if (iframeEditor) iframeEditor.style.display = "none";
   if (iframeTest) {
     iframeTest.style.display = "block";
-    iframeTest.src = iframeTest.src; // fuerza recarga del test
+
+    // Forzar recarga real sin caché
+    const srcActual = iframeTest.getAttribute("src").split("?")[0];
+    iframeTest.setAttribute("src", srcActual + "?t=" + Date.now());
   }
 
   if (btnTest) btnTest.classList.add("activo");
