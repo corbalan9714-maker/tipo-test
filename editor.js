@@ -535,3 +535,66 @@ function cargarSelectRenombrar() {
     select.appendChild(opt);
   });
 }
+// ===== EXPORTAR / IMPORTAR BANCO =====
+const btnExportar = document.getElementById("btnExportarBanco");
+if (btnExportar) {
+  btnExportar.onclick = async () => {
+    if (!window.cargarDesdeFirebase) {
+      alert("No se puede exportar: Firebase no está disponible");
+      return;
+    }
+
+    const banco = await window.cargarDesdeFirebase();
+    const dataStr = JSON.stringify(banco, null, 2);
+
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "banco-preguntas.json";
+    a.click();
+
+    URL.revokeObjectURL(url);
+  };
+}
+
+const btnImportar = document.getElementById("btnImportarBanco");
+const inputImportar = document.getElementById("inputImportarBanco");
+
+if (btnImportar && inputImportar) {
+  btnImportar.onclick = () => inputImportar.click();
+
+  inputImportar.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const text = await file.text();
+    const bancoImportado = JSON.parse(text);
+
+    if (!confirm("Esto añadirá las preguntas al banco actual. ¿Continuar?")) {
+      return;
+    }
+
+    if (!window.guardarEnFirebase) {
+      alert("No se puede importar: Firebase no está disponible");
+      return;
+    }
+
+    for (const tema in bancoImportado) {
+      for (const pregunta of bancoImportado[tema]) {
+        await window.guardarEnFirebase({
+          tema: tema,
+          pregunta: pregunta.pregunta,
+          opciones: pregunta.opciones,
+          correcta: pregunta.correcta,
+          feedback: pregunta.feedback || "",
+          fecha: Date.now()
+        });
+      }
+    }
+
+    alert("Banco importado correctamente.");
+    location.reload();
+  };
+}

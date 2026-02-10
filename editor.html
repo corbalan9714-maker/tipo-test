@@ -244,7 +244,18 @@ body {
 <label>Nuevo nombre:</label><br>
 <input type="text" id="nuevoNombreTema" placeholder="Nuevo nombre del tema"><br><br>
 
+
 <button onclick="renombrarTema()">Guardar nombre</button>
+
+<hr>
+
+<h2>Copia de seguridad</h2>
+
+<div style="text-align:center; margin-top:10px; margin-bottom:20px;">
+  <button id="btnExportarBanco">Exportar banco</button>
+  <button id="btnImportarBanco">Importar banco</button>
+  <input type="file" id="inputImportarBanco" accept=".json" style="display:none;">
+</div>
 
 <!-- Sin JS inline: lógica del editor en editor.js -->
 <script>
