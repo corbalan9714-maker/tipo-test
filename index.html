@@ -81,6 +81,7 @@
       cursor: pointer;
     }
   </style>
+  <link rel="manifest" href="manifest.json">
 </head>
 
 <body>
@@ -162,7 +163,16 @@
       }
     });
 
-    console.log("Firebase conectado");
+</script>
+
+  <script>
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("service-worker.js")
+      .then(() => console.log("Service Worker activo"))
+      .catch(err => console.log("Error SW:", err));
+  });
+}
   </script>
 </body>
 </html>
