@@ -11,6 +11,7 @@ function guardarBanco() {
 
 let banco = cargarBanco();
 let editando = null;
+let textoBusqueda = "";
 
 /* ====== INICIALIZACIÓN ====== */
 document.addEventListener("DOMContentLoaded", initEditor);
@@ -46,6 +47,13 @@ function initEditor() {
     cargarSelectRenombrar();
   }
   prepararValidacionFormulario();
+  const buscador = document.getElementById("buscadorPreguntas");
+  if (buscador) {
+    buscador.addEventListener("input", (e) => {
+      textoBusqueda = e.target.value.toLowerCase();
+      mostrarPreguntas();
+    });
+  }
   validarFormulario();
   prepararValidacionBorrado();
   validarBorradoTema();
@@ -226,6 +234,13 @@ function mostrarPreguntas() {
   if (!tema || !banco[tema]) return;
 
   banco[tema].forEach((p, i) => {
+    if (
+      textoBusqueda &&
+      !p.pregunta.toLowerCase().includes(textoBusqueda) &&
+      !(p.feedback || "").toLowerCase().includes(textoBusqueda)
+    ) {
+      return;
+    }
     const div = document.createElement("div");
     div.style.border = "1px solid #ccc";
     div.style.padding = "8px";
@@ -240,7 +255,7 @@ function mostrarPreguntas() {
       </ul>
       ${p.feedback ? `<div style="margin-top:6px; white-space:pre-line;"><em>Feedback:</em>\n${p.feedback}</div>` : ""}
       <button onclick="cargarParaEditar('${tema}', ${i})">Editar</button>
-      <button onclick="borrarPregunta('${tema}', ${i})">Borrar</button>
+      <button class="btn-borrar" onclick="borrarPregunta('${tema}', ${i})">Borrar</button>
     `;
     contenedor.appendChild(div);
   });
@@ -608,3 +623,13 @@ function cargarSelectRenombrar() {
     select.appendChild(opt);
   });
 }
+// ====== CANCELAR EDICIÓN ======
+document.addEventListener("DOMContentLoaded", () => {
+  const btnCancelar = document.getElementById("btnCancelarEdicion");
+  if (!btnCancelar) return;
+
+  btnCancelar.addEventListener("click", () => {
+    editando = null;
+    limpiarFormulario();
+  });
+});
