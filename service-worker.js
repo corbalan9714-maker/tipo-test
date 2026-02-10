@@ -1,31 +1,36 @@
 const CACHE_NAME = "tipo-test-cache-v1";
 
-const urlsToCache = [
-  "/",
-  "/index.html",
-  "/editor.html",
-  "/test.html",
-  "/app.js",
-  "/editor.js",
-  "/test.js",
-  "/firebase.js"
+const FILES_TO_CACHE = [
+  "./",
+  "./index.html",
+  "./editor.html",
+  "./test.html",
+  "./app.js",
+  "./editor.js",
+  "./test.js",
+  "./firebase.js",
+  "./styles.css",
+  "./manifest.json"
 ];
 
-// Instalar
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(urlsToCache);
+      return Promise.all(
+        FILES_TO_CACHE.map(url =>
+          cache.add(url).catch(() => {
+            console.warn("No se pudo cachear:", url);
+          })
+        )
+      );
     })
   );
 });
 
-// Activar
 self.addEventListener("activate", event => {
   event.waitUntil(self.clients.claim());
 });
 
-// Interceptar peticiones
 self.addEventListener("fetch", event => {
   event.respondWith(
     caches.match(event.request).then(response => {
