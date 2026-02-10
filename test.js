@@ -77,23 +77,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 window.addEventListener("message", async (e) => {
   if (!e.data) return;
 
-  // Mensaje desde el editor: banco actualizado
-  if (e.data.type === "BANCO_ACTUALIZADO") {
-    setTimeout(async () => {
-      if (window.cargarDesdeFirebase) {
-        banco = await window.cargarDesdeFirebase();
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(banco));
-      }
-      pintarCheckboxesTemas();
-    }, 400);
-  }
+  if (e.data.type === "BANCO_ACTUALIZADO" || e.data.type === "ACTIVAR_TEST") {
+    console.log("Recargando banco por mensaje:", e.data.type);
 
-  // Mensaje al activar la pestaña Test
-  if (e.data.type === "ACTIVAR_TEST") {
     if (window.cargarDesdeFirebase) {
       banco = await window.cargarDesdeFirebase();
       localStorage.setItem(STORAGE_KEY, JSON.stringify(banco));
     }
+
     pintarCheckboxesTemas();
   }
 });
