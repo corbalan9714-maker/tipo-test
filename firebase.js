@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBQw64gv58J684nbD1QIAqkrIPkbVg_8DU",
@@ -81,3 +81,39 @@ export async function eliminarPreguntaFirebase(id) {
 }
 
 window.eliminarPreguntaFirebase = eliminarPreguntaFirebase;
+
+export async function crearBackupAutomatico(banco) {
+  try {
+    const fecha = new Date();
+
+    // Crear nuevo backup
+    await addDoc(collection(db, "backups"), {
+      fecha: fecha.toISOString(),
+      banco: banco
+    });
+
+    // Obtener todos los backups ordenados por fecha
+    const q = query(collection(db, "backups"), orderBy("fecha", "asc"));
+    const snapshot = await getDocs(q);
+
+    // Si hay más de 50, borrar los más antiguos
+    if (snapshot.size > 50) {
+      const exceso = snapshot.size - 50;
+      let contador = 0;
+
+      for (const docSnap of snapshot.docs) {
+        if (contador >= exceso) break;
+        await deleteDoc(doc(db, "backups", docSnap.id));
+        contador++;
+      }
+
+      console.log("Backups antiguos eliminados:", exceso);
+    }
+
+    console.log("Backup automático creado");
+  } catch (err) {
+    console.error("Error creando backup", err);
+  }
+}
+
+window.crearBackupAutomatico = crearBackupAutomatico;
