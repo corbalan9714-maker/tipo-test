@@ -77,11 +77,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 // 🔄 Sincronización directa con el editor (misma página)
 window.addEventListener("message", async (e) => {
   if (e.data && e.data.type === "BANCO_ACTUALIZADO") {
-    if (window.cargarDesdeFirebase) {
-      banco = await window.cargarDesdeFirebase();
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(banco));
-    }
-    pintarCheckboxesTemas();
+    // pequeño retraso para que Firebase termine de sincronizar
+    setTimeout(async () => {
+      if (window.cargarDesdeFirebase) {
+        banco = await window.cargarDesdeFirebase();
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(banco));
+      }
+      pintarCheckboxesTemas();
+    }, 400);
   }
 });
 
