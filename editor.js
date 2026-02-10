@@ -16,18 +16,28 @@ let editando = null;
 document.addEventListener("DOMContentLoaded", initEditor);
 
 function initEditor() {
-  // Cargar banco desde Firebase al iniciar el editor
+  // Cargar banco con soporte offline
   if (window.cargarDesdeFirebase) {
-    window.cargarDesdeFirebase().then(bancoFirebase => {
-      banco = bancoFirebase;
-      limpiarTemasVacios();
-      actualizarOpciones();
-      cargarTemasVista();
-      cargarTemasExistentes();
-      cargarSelectEliminar();
-      cargarSelectRenombrar();
-    });
+    window.cargarDesdeFirebase()
+      .then(bancoFirebase => {
+        banco = bancoFirebase;
+        // Guardar copia local para modo offline
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(banco));
+      })
+      .catch(() => {
+        console.log("Sin conexión, usando copia local (editor)");
+        banco = cargarBanco();
+      })
+      .finally(() => {
+        limpiarTemasVacios();
+        actualizarOpciones();
+        cargarTemasVista();
+        cargarTemasExistentes();
+        cargarSelectEliminar();
+        cargarSelectRenombrar();
+      });
   } else {
+    banco = cargarBanco();
     limpiarTemasVacios();
     actualizarOpciones();
     cargarTemasVista();
