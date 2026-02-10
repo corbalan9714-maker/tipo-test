@@ -824,13 +824,29 @@ function resetearSoloFalladas() {
 
 // 🔄 Resetear fallos por tema (NUEVA)
 function resetearFallosPorTema() {
+  let tema = null;
+
+  // Prioridad: selector específico si existe
   const select = document.getElementById("resetTemaSelect");
-  if (!select || !select.value) {
-    alert("Selecciona un tema primero.");
+  if (select && select.value) {
+    tema = select.value;
+  } else {
+    // Si no hay selector, usar el tema marcado en los checkboxes
+    const seleccionados = obtenerTemasSeleccionados();
+    if (seleccionados.length === 1) {
+      tema = seleccionados[0];
+    }
+  }
+
+  if (!tema) {
+    alert("Selecciona un solo tema para restablecer sus estadísticas.");
     return;
   }
 
-  const tema = select.value;
+  if (!banco[tema]) {
+    alert("Tema no válido.");
+    return;
+  }
 
   if (!banco[tema]) {
     alert("Tema no válido.");
@@ -880,6 +896,15 @@ function resetearFallosPorTema() {
   if (typeof pintarCheckboxesTemas === "function") {
     pintarCheckboxesTemas();
   }
+}
+
+// Alias para botones del HTML
+function restablecerFalladas() {
+  resetearEstadisticas();
+}
+
+function restablecerTema() {
+  resetearFallosPorTema();
 }
 
 
