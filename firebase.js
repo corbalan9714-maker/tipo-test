@@ -17,6 +17,8 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
+export { db, auth, provider };
+
 // Control de acceso por lista blanca
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
