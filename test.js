@@ -682,16 +682,9 @@ function iniciarTestReal() {
         ? poolSimulacro.length
         : num;
 
-      // Mezclar sin duplicados
-      const mezcladas = poolSimulacro.sort(() => Math.random() - 0.5);
-
-      preguntasTest = [];
-      for (let p of mezcladas) {
-        if (!preguntasTest.includes(p)) {
-          preguntasTest.push(p);
-        }
-        if (preguntasTest.length === total) break;
-      }
+      preguntasTest = poolSimulacro
+        .sort(() => Math.random() - 0.5)
+        .slice(0, total);
     } else {
       preguntasTest = seleccionarPreguntasPonderadas(
         poolPreguntas,

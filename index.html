@@ -128,7 +128,7 @@
     }
   </style>
   <link rel="manifest" href="manifest.json">
-  <link rel="icon" href="./favicon.ico">
+  <link rel="icon" href="favicon.ico">
 </head>
 
 <body>
@@ -147,12 +147,6 @@
       <button id="btnTest">Test</button>
     </div>
     <div style="margin-left:auto; display:flex; gap:12px; align-items:center;">
-      <a id="linkAdmin" href="admin.html" style="display:none; text-decoration:none;">
-        <button>Admin</button>
-      </a>
-      <a id="linkSalirAdmin" href="index.html" style="display:none; text-decoration:none;">
-        <button>Salir del panel</button>
-      </a>
       <span id="userInfo"></span>
       <button id="btnLogout" style="display:none">Cerrar sesión</button>
     </div>
@@ -197,31 +191,10 @@
     };
 
     btnLogin.onclick = async () => {
-      const result = await signInWithPopup(auth, provider);
-      actualizarPanelAdmin(result.user);
+      await signInWithPopup(auth, provider);
     };
 
     const loginScreen = document.getElementById("loginScreen");
-
-    const ADMIN_EMAIL = "corbalan9714@gmail.com";
-    const linkAdmin = document.getElementById("linkAdmin");
-    const linkSalirAdmin = document.getElementById("linkSalirAdmin");
-
-    function actualizarPanelAdmin(user) {
-      if (!user) {
-        if (linkAdmin) linkAdmin.style.display = "none";
-        if (linkSalirAdmin) linkSalirAdmin.style.display = "none";
-        return;
-      }
-
-      if (user.email === ADMIN_EMAIL) {
-        if (linkAdmin) linkAdmin.style.display = "inline-block";
-        if (linkSalirAdmin) linkSalirAdmin.style.display = "inline-block";
-      } else {
-        if (linkAdmin) linkAdmin.style.display = "none";
-        if (linkSalirAdmin) linkSalirAdmin.style.display = "none";
-      }
-    }
 
     onAuthStateChanged(auth, user => {
       if (user) {
@@ -229,32 +202,42 @@
         window.currentUser = user;
         loginScreen.style.display = "none";
         btnLogout.style.display = "inline-block";
-
-        actualizarPanelAdmin(user);
-
       } else {
         userInfo.textContent = "";
         window.currentUser = null;
         loginScreen.style.display = "flex";
         btnLogout.style.display = "none";
-
-        actualizarPanelAdmin(null);
       }
     });
+
 </script>
 
   <script>
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("./service-worker.js")
-          .then(reg => {
-            console.log("Service Worker registrado", reg.scope);
-          })
-          .catch(err => {
-            console.error("Error registrando Service Worker:", err);
-          });
-      });
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", async () => {
+    try {
+      const registration = await navigator.serviceWorker.register("./service-worker.js");
+      console.log("Service Worker activo");
+
+      // Fuerza comprobación de actualización
+      registration.update();
+
+      // Detecta nueva versión y recarga automáticamente
+      registration.onupdatefound = () => {
+        const newWorker = registration.installing;
+        if (!newWorker) return;
+        newWorker.onstatechange = () => {
+          if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+            console.log("Nueva versión disponible. Recargando...");
+            window.location.reload();
+          }
+        };
+      };
+    } catch (err) {
+      console.log("Error SW:", err);
     }
+  });
+}
   </script>
 </body>
 </html>

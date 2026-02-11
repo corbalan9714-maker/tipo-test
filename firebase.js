@@ -1,6 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBQw64gv58J684nbD1QIAqkrIPkbVg_8DU",
@@ -12,37 +11,7 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-
-export const db = getFirestore(app);
-export const auth = getAuth(app);
-const provider = new GoogleAuthProvider();
-
-// Control de acceso por lista blanca
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    try {
-      await signInWithPopup(auth, provider);
-    } catch (err) {
-      console.error("Error en login", err);
-    }
-    return;
-  }
-
-  try {
-    const email = user.email;
-    const ref = doc(db, "usuarios", email);
-    const snap = await getDoc(ref);
-
-    if (!snap.exists() || snap.data().autorizado !== true) {
-      alert("No tienes acceso a esta aplicación.");
-      await signOut(auth);
-    } else {
-      console.log("Usuario autorizado:", email);
-    }
-  } catch (err) {
-    console.error("Error comprobando autorización", err);
-  }
-});
+const db = getFirestore(app);
 
 export async function guardarEnFirebase(pregunta) {
   try {
@@ -52,47 +21,29 @@ export async function guardarEnFirebase(pregunta) {
     console.error("Error al guardar en Firebase", err);
   }
 }
-
 window.guardarEnFirebase = guardarEnFirebase;
+
 export async function cargarDesdeFirebase() {
-  try {
-    const snapshot = await getDocs(collection(db, "preguntas"));
-    const banco = {};
+  const snapshot = await getDocs(collection(db, "preguntas"));
+  const banco = {};
 
-    snapshot.forEach(docSnap => {
-      const data = docSnap.data();
-      const id = docSnap.id;
+  snapshot.forEach(docSnap => {
+    const data = docSnap.data();
+    const id = docSnap.id;
 
-      if (!banco[data.tema]) banco[data.tema] = [];
+    if (!banco[data.tema]) banco[data.tema] = [];
 
-      banco[data.tema].push({
-        id,
-        pregunta: data.pregunta,
-        opciones: data.opciones,
-        correcta: data.correcta,
-        fallada: data.fallada || 0,
-        feedback: data.feedback || ""
-      });
+    banco[data.tema].push({
+      id,
+      pregunta: data.pregunta,
+      opciones: data.opciones,
+      correcta: data.correcta,
+      fallada: data.fallada || 0,
+      feedback: data.feedback || ""
     });
+  });
 
-    // Guardar copia local
-    localStorage.setItem("bancoOffline", JSON.stringify(banco));
-    console.log("Banco cargado desde Firebase y guardado offline");
-
-    return banco;
-
-  } catch (err) {
-    console.warn("Sin conexión. Usando banco offline.");
-
-    const bancoLocal = localStorage.getItem("bancoOffline");
-
-    if (bancoLocal) {
-      return JSON.parse(bancoLocal);
-    } else {
-      console.error("No hay banco offline disponible");
-      return {};
-    }
-  }
+  return banco;
 }
 
 export async function actualizarFallada(id, nuevoValor) {
