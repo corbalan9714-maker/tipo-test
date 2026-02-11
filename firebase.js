@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBQw64gv58J684nbD1QIAqkrIPkbVg_8DU",
@@ -12,6 +13,36 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
+const auth = getAuth(app);
+const provider = new GoogleAuthProvider();
+
+// Control de acceso por lista blanca
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (err) {
+      console.error("Error en login", err);
+    }
+    return;
+  }
+
+  try {
+    const email = user.email;
+    const ref = doc(db, "usuarios", email);
+    const snap = await getDoc(ref);
+
+    if (!snap.exists() || snap.data().autorizado !== true) {
+      alert("No tienes acceso a esta aplicación.");
+      await auth.signOut();
+    } else {
+      console.log("Usuario autorizado:", email);
+    }
+  } catch (err) {
+    console.error("Error comprobando autorización", err);
+  }
+});
 
 export async function guardarEnFirebase(pregunta) {
   try {
