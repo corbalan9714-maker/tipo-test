@@ -18,6 +18,7 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
 export { db, auth, provider };
+export { auth };
 
 // Control de acceso por lista blanca
 onAuthStateChanged(auth, async (user) => {
