@@ -1,4 +1,4 @@
-const CACHE_NAME = "tipo-test-cache-v1";
+const CACHE_NAME = "tipo-test-cache-v2";
 
 const FILES_TO_CACHE = [
   "./",
@@ -9,10 +9,14 @@ const FILES_TO_CACHE = [
   "./editor.js",
   "./test.js",
   "./firebase.js",
-  "./manifest.json"
+  "./manifest.json",
+  "./spiderman.gif",
+  "./fanfare_tv.wav"
 ];
 
+// Instalación
 self.addEventListener("install", event => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
       return Promise.all(
@@ -26,10 +30,23 @@ self.addEventListener("install", event => {
   );
 });
 
+// Activación: elimina cachés antiguas
 self.addEventListener("activate", event => {
-  event.waitUntil(self.clients.claim());
+  event.waitUntil(
+    caches.keys().then(keys =>
+      Promise.all(
+        keys.map(key => {
+          if (key !== CACHE_NAME) {
+            return caches.delete(key);
+          }
+        })
+      )
+    )
+  );
+  self.clients.claim();
 });
 
+// Estrategia de caché: primero caché, luego red
 self.addEventListener("fetch", event => {
   event.respondWith(
     caches.match(event.request).then(response => {
