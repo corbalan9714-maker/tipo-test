@@ -576,6 +576,16 @@ function iniciarTestReal() {
     }
   });
 
+  // Eliminar preguntas duplicadas por id o texto
+  const mapaUnico = new Map();
+  poolPreguntas.forEach(p => {
+    const clave = p.id || p.pregunta;
+    if (!mapaUnico.has(clave)) {
+      mapaUnico.set(clave, p);
+    }
+  });
+  poolPreguntas = Array.from(mapaUnico.values());
+
   // Seguridad: si no hay preguntas tras el filtro, salir
   if (poolPreguntas.length === 0) {
     alert("No hay preguntas en los temas seleccionados");
