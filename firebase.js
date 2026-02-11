@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBQw64gv58J684nbD1QIAqkrIPkbVg_8DU",
@@ -18,7 +18,6 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
 export { db, auth, provider };
-export { auth };
 
 // Control de acceso por lista blanca
 onAuthStateChanged(auth, async (user) => {
@@ -38,7 +37,7 @@ onAuthStateChanged(auth, async (user) => {
 
     if (!snap.exists() || snap.data().autorizado !== true) {
       alert("No tienes acceso a esta aplicación.");
-      await auth.signOut();
+      await signOut(auth);
     } else {
       console.log("Usuario autorizado:", email);
     }
