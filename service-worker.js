@@ -1,17 +1,17 @@
-const CACHE_NAME = "tipo-test-cache-v2";
+const CACHE_NAME = "tipo-test-cache-v3";
 
 const FILES_TO_CACHE = [
   "./",
-  "./index.html",
-  "./editor.html",
-  "./test.html",
-  "./app.js",
-  "./editor.js",
-  "./test.js",
-  "./firebase.js",
-  "./manifest.json",
-  "./spiderman.gif",
-  "./fanfare_tv.wav"
+  "index.html",
+  "test.html",
+  "editor.html",
+  "app.js",
+  "test.js",
+  "editor.js",
+  "firebase.js",
+  "manifest.json",
+  "spiderman.gif",
+  "fanfare_tv.wav"
 ];
 
 // Instalación
@@ -19,38 +19,37 @@ self.addEventListener("install", event => {
   self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => {
-      return Promise.all(
-        FILES_TO_CACHE.map(url =>
-          cache.add(url).catch(() => {
-            console.warn("No se pudo cachear:", url);
-          })
-        )
-      );
+      return cache.addAll(FILES_TO_CACHE);
     })
   );
 });
 
-// Activación: elimina cachés antiguas
+// Activación
 self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
+    caches.keys().then(keys => {
+      return Promise.all(
         keys.map(key => {
           if (key !== CACHE_NAME) {
             return caches.delete(key);
           }
         })
-      )
-    )
+      );
+    }).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-// Estrategia de caché: primero caché, luego red
+// Estrategia de caché: network first
 self.addEventListener("fetch", event => {
   event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request);
-    })
+    fetch(event.request)
+      .then(response => {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then(cache => {
+          cache.put(event.request, clone);
+        });
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });

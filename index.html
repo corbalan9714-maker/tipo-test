@@ -128,6 +128,7 @@
     }
   </style>
   <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="favicon.ico">
 </head>
 
 <body>
@@ -213,10 +214,28 @@
 
   <script>
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js")
-      .then(() => console.log("Service Worker activo"))
-      .catch(err => console.log("Error SW:", err));
+  window.addEventListener("load", async () => {
+    try {
+      const registration = await navigator.serviceWorker.register("./service-worker.js");
+      console.log("Service Worker activo");
+
+      // Fuerza comprobación de actualización
+      registration.update();
+
+      // Detecta nueva versión y recarga automáticamente
+      registration.onupdatefound = () => {
+        const newWorker = registration.installing;
+        if (!newWorker) return;
+        newWorker.onstatechange = () => {
+          if (newWorker.state === "installed" && navigator.serviceWorker.controller) {
+            console.log("Nueva versión disponible. Recargando...");
+            window.location.reload();
+          }
+        };
+      };
+    } catch (err) {
+      console.log("Error SW:", err);
+    }
   });
 }
   </script>
