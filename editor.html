@@ -279,6 +279,12 @@ body {
 <label>Selecciona un tema para eliminar:</label><br>
 <select id="temaEliminar"></select><br><br>
 
+<label>Selecciona subtema:</label><br>
+<select id="subtemaEliminar"></select><br><br>
+
+<button onclick="borrarSubtemaDesdeGestion()" style="background:rgba(0,0,0,0.08); color:var(--text-main); box-shadow:none;">
+  Eliminar subtema
+</button>
 
 <button onclick="borrarTemaDesdeGestion()" style="background:rgba(0,0,0,0.08); color:var(--text-main); box-shadow:none;">
   Eliminar tema
@@ -298,9 +304,22 @@ body {
 
 <label>Nuevo nombre:</label><br>
 <input type="text" id="nuevoNombreTema" placeholder="Nuevo nombre del tema"><br><br>
+<button onclick="renombrarTema()">Guardar tema</button>
 
+<hr style="margin:16px 0;">
 
-<button onclick="renombrarTema()">Guardar nombre</button>
+<h3>Renombrar subtema</h3>
+
+<label>Selecciona tema:</label><br>
+<select id="temaRenombrarSubtema"></select><br><br>
+
+<label>Selecciona subtema:</label><br>
+<select id="subtemaRenombrar"></select><br><br>
+
+<label>Nuevo nombre del subtema:</label><br>
+<input type="text" id="nuevoNombreSubtema" placeholder="Nuevo nombre del subtema"><br><br>
+
+<button onclick="renombrarSubtema()">Guardar subtema</button>
 
 </div>
 </details>
