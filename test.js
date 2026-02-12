@@ -384,7 +384,16 @@ function pintarCheckboxesTemas() {
 
   contenedor.innerHTML = "";
 
-  Object.keys(banco).forEach(tema => {
+  let temasOrdenados = Object.keys(banco);
+
+  // Forzar el tema especial al final
+  const indiceEspecial = temasOrdenados.indexOf("__falladas__");
+  if (indiceEspecial !== -1) {
+    temasOrdenados.splice(indiceEspecial, 1);
+    temasOrdenados.push("__falladas__");
+  }
+
+  temasOrdenados.forEach(tema => {
     let nombreVisible = tema;
     let contador = 0;
     let nuevas = 0;
