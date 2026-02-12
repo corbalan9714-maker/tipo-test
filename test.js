@@ -1,3 +1,10 @@
+function ordenNatural(a, b) {
+  return a.localeCompare(b, "es", {
+    numeric: true,
+    sensitivity: "base"
+  });
+}
+
 // === Mostrar opciones corregidas: a), b), c), d) con colores ===
 function renderizarOpcionesCorregidas(p) {
   let html = "";
@@ -90,6 +97,25 @@ function renderizarHistorial(temaSeleccionado) {
 window.addEventListener("DOMContentLoaded", () => {
   const select = document.getElementById("filtroTemaHistorial");
   if (!select) return;
+
+  // Rellenar selector con temas ordenados
+  select.innerHTML = "";
+
+  const temas = Object.keys(banco || {})
+    .filter(t => t !== "__falladas__")
+    .sort(ordenNatural);
+
+  const optTodos = document.createElement("option");
+  optTodos.value = "todos";
+  optTodos.textContent = "Todos los temas";
+  select.appendChild(optTodos);
+
+  temas.forEach(tema => {
+    const opt = document.createElement("option");
+    opt.value = tema;
+    opt.textContent = tema;
+    select.appendChild(opt);
+  });
 
   select.addEventListener("change", () => {
     renderizarHistorial(select.value);
@@ -384,12 +410,12 @@ function pintarCheckboxesTemas() {
 
   contenedor.innerHTML = "";
 
-  let temasOrdenados = Object.keys(banco);
+  let temasOrdenados = Object.keys(banco)
+    .filter(t => t !== "__falladas__")
+    .sort(ordenNatural);
 
-  // Forzar el tema especial al final
-  const indiceEspecial = temasOrdenados.indexOf("__falladas__");
-  if (indiceEspecial !== -1) {
-    temasOrdenados.splice(indiceEspecial, 1);
+  // Añadir el tema especial al final si existe
+  if (banco["__falladas__"]) {
     temasOrdenados.push("__falladas__");
   }
 
@@ -435,7 +461,14 @@ function pintarCheckboxesTemas() {
 
     // === Subtemas colapsables ===
     if (tema !== "__falladas__" && Array.isArray(banco[tema])) {
-      const subtemas = [...new Set(banco[tema].map(p => p.subtema || "General"))];
+      let subtemas = [...new Set(banco[tema].map(p => p.subtema || "General"))];
+
+      // "General" siempre primero, el resto orden natural
+      subtemas = subtemas.sort((a, b) => {
+        if (a === "General") return -1;
+        if (b === "General") return 1;
+        return ordenNatural(a, b);
+      });
 
       if (subtemas.length > 0) {
         // Botón de colapsar/expandir

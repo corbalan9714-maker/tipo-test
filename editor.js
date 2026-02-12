@@ -9,10 +9,20 @@ function guardarBanco() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(banco));
 }
 
+
 let banco = cargarBanco();
 let editando = null;
 let textoBusqueda = "";
 let contadorResultados = 0;
+
+function ordenarNatural(lista) {
+  return lista.sort((a, b) =>
+    a.localeCompare(b, undefined, {
+      numeric: true,
+      sensitivity: "base"
+    })
+  );
+}
 
 function normalizarTexto(texto) {
   return (texto || "")
@@ -286,12 +296,13 @@ function cargarTemasVista() {
   if (!select) return;
 
   select.innerHTML = "";
-  Object.keys(banco).forEach(tema => {
-    const opt = document.createElement("option");
-    opt.value = tema;
-    opt.textContent = tema;
-    select.appendChild(opt);
-  });
+  ordenarNatural(Object.keys(banco).filter(t => t !== "__falladas__"))
+    .forEach(tema => {
+      const opt = document.createElement("option");
+      opt.value = tema;
+      opt.textContent = tema;
+      select.appendChild(opt);
+    });
 
   select.onchange = () => {
     cargarSubtemasVista();
@@ -487,7 +498,7 @@ function cargarTemasExistentes() {
 
   select.innerHTML = "<option value=''>-- seleccionar --</option>";
 
-  Object.keys(banco).forEach(tema => {
+  ordenarNatural(Object.keys(banco).filter(t => t !== "__falladas__")).forEach(tema => {
     const opt = document.createElement("option");
     opt.value = tema;
     opt.textContent = tema;
@@ -554,7 +565,7 @@ function cargarSelectEliminar() {
 
   select.innerHTML = "<option value=''>-- seleccionar --</option>";
 
-  Object.keys(banco).forEach(tema => {
+  ordenarNatural(Object.keys(banco)).forEach(tema => {
     if (tema === "__falladas__") return;
 
     const opt = document.createElement("option");
@@ -586,12 +597,18 @@ function cargarSubtemasEliminar() {
     subtemas.add(p.subtema || "General");
   });
 
-  subtemas.forEach(st => {
-    const opt = document.createElement("option");
-    opt.value = st;
-    opt.textContent = st;
-    subtemaSelect.appendChild(opt);
-  });
+  Array.from(subtemas)
+    .sort((a, b) => {
+      if (a.toLowerCase() === "general") return -1;
+      if (b.toLowerCase() === "general") return 1;
+      return a.localeCompare(b, "es", { sensitivity: "base" });
+    })
+    .forEach(st => {
+      const opt = document.createElement("option");
+      opt.value = st;
+      opt.textContent = st;
+      subtemaSelect.appendChild(opt);
+    });
 }
 
 // ====== VALIDACIÓN DE FORMULARIO (activar/desactivar botón) ======
@@ -762,7 +779,7 @@ function cargarSelectRenombrar() {
 
   select.innerHTML = "<option value=''>-- seleccionar --</option>";
 
-  Object.keys(banco).forEach(tema => {
+  ordenarNatural(Object.keys(banco)).forEach(tema => {
     if (tema === "__falladas__") return;
 
     const opt = document.createElement("option");
@@ -778,7 +795,7 @@ function cargarTemasRenombrarSubtema() {
 
   select.innerHTML = "<option value=''>-- seleccionar tema --</option>";
 
-  Object.keys(banco).forEach(tema => {
+  ordenarNatural(Object.keys(banco)).forEach(tema => {
     if (tema === "__falladas__") return;
 
     const opt = document.createElement("option");
@@ -811,12 +828,18 @@ function cargarSubtemasRenombrar() {
     subtemas.add(p.subtema || "General");
   });
 
-  subtemas.forEach(st => {
-    const opt = document.createElement("option");
-    opt.value = st;
-    opt.textContent = st;
-    subtemaSelect.appendChild(opt);
-  });
+  Array.from(subtemas)
+    .sort((a, b) => {
+      if (a.toLowerCase() === "general") return -1;
+      if (b.toLowerCase() === "general") return 1;
+      return a.localeCompare(b, "es", { sensitivity: "base" });
+    })
+    .forEach(st => {
+      const opt = document.createElement("option");
+      opt.value = st;
+      opt.textContent = st;
+      subtemaSelect.appendChild(opt);
+    });
   // Activar o desactivar botón de renombrar según selección
   const botonRenombrar = document.querySelector("button[onclick='renombrarSubtema()']");
   if (botonRenombrar) {
@@ -935,12 +958,18 @@ function cargarSubtemasPorTema() {
     if (p.subtema) subtemas.add(p.subtema);
   });
 
-  subtemas.forEach(st => {
-    const opt = document.createElement("option");
-    opt.value = st;
-    opt.textContent = st;
-    selectSubtema.appendChild(opt);
-  });
+  Array.from(subtemas)
+    .sort((a, b) => {
+      if (a.toLowerCase() === "general") return -1;
+      if (b.toLowerCase() === "general") return 1;
+      return a.localeCompare(b, "es", { sensitivity: "base" });
+    })
+    .forEach(st => {
+      const opt = document.createElement("option");
+      opt.value = st;
+      opt.textContent = st;
+      selectSubtema.appendChild(opt);
+    });
 }
  
 // ====== CANCELAR EDICIÓN ======
@@ -970,12 +999,18 @@ function cargarSubtemasVista() {
     subtemas.add(p.subtema || "General");
   });
 
-  subtemas.forEach(st => {
-    const opt = document.createElement("option");
-    opt.value = st;
-    opt.textContent = st;
-    selectSubtema.appendChild(opt);
-  });
+  Array.from(subtemas)
+    .sort((a, b) => {
+      if (a.toLowerCase() === "general") return -1;
+      if (b.toLowerCase() === "general") return 1;
+      return a.localeCompare(b, "es", { sensitivity: "base" });
+    })
+    .forEach(st => {
+      const opt = document.createElement("option");
+      opt.value = st;
+      opt.textContent = st;
+      selectSubtema.appendChild(opt);
+    });
 
   selectSubtema.onchange = mostrarPreguntas;
 }
@@ -988,7 +1023,7 @@ function cargarTemasMover() {
   selectTema.innerHTML = "<option value=''>-- seleccionar tema --</option>";
   selectNuevoTema.innerHTML = "<option value=''>-- seleccionar tema destino --</option>";
 
-  Object.keys(banco).forEach(tema => {
+  ordenarNatural(Object.keys(banco)).forEach(tema => {
     if (tema === "__falladas__") return;
 
     const opt1 = document.createElement("option");
@@ -1014,12 +1049,18 @@ function cargarSubtemasMover() {
   const subtemas = new Set();
   banco[tema].forEach(p => subtemas.add(p.subtema || "General"));
 
-  subtemas.forEach(st => {
-    const opt = document.createElement("option");
-    opt.value = st;
-    opt.textContent = st;
-    selectSubtema.appendChild(opt);
-  });
+  Array.from(subtemas)
+    .sort((a, b) => {
+      if (a.toLowerCase() === "general") return -1;
+      if (b.toLowerCase() === "general") return 1;
+      return a.localeCompare(b, "es", { sensitivity: "base" });
+    })
+    .forEach(st => {
+      const opt = document.createElement("option");
+      opt.value = st;
+      opt.textContent = st;
+      selectSubtema.appendChild(opt);
+    });
 }
 
 function cargarPreguntasMover() {
@@ -1063,12 +1104,14 @@ function cargarSubtemasDestinoMover() {
     listaSubtemas.unshift("General");
   }
 
-  listaSubtemas.forEach(st => {
-    const opt = document.createElement("option");
-    opt.value = st;
-    opt.textContent = st;
-    selectSubtema.appendChild(opt);
-  });
+  listaSubtemas
+    .sort((a, b) => a.localeCompare(b, "es", { sensitivity: "base" }))
+    .forEach(st => {
+      const opt = document.createElement("option");
+      opt.value = st;
+      opt.textContent = st;
+      selectSubtema.appendChild(opt);
+    });
 }
 
 async function moverPregunta() {
