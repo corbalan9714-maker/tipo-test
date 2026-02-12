@@ -607,38 +607,58 @@ button[onclick*="blanco"] {
     ">
       Genera un test solo con preguntas que no hayas fallado todavía dentro de los temas seleccionados.
     </p>
-  </div>
 
-</div>
+    <hr style="margin:14px 0; border:none; border-top:1px solid var(--border-main);">
 
-<div style="margin-top:16px; text-align:center;">
-  <label>Nº de preguntas:</label>
-  <input type="number" id="numPreguntas" min="1">
-</div>
+    <label style="margin-top:0; font-weight:600;">Nº de preguntas</label>
+    <input type="number" id="numPreguntas" min="1" style="margin:6px auto 10px; display:block;">
 
-<div style="margin-top:18px; text-align:center;">
-  <div class="tooltip-wrapper">
-    <button id="btnGenerarTest" onclick="iniciarTest()" disabled>
-      Generar test
-    </button>
-    <div class="tooltip-text">
-      Selecciona un modo para continuar
+    <div class="tooltip-wrapper" style="margin-top:6px;">
+      <button id="btnGenerarTest" onclick="iniciarTest()" disabled style="width:100%;">
+        Generar test
+      </button>
+      <div class="tooltip-text">
+        Selecciona un modo para continuar
+      </div>
     </div>
   </div>
+
 </div>
 
-<div class="bloque-reset" style="flex-direction:column; align-items:center; margin-top:18px;">
-  <button onclick="restablecerFalladas()" style="font-size:12px; padding:4px 10px;">
+
+<div style="
+  margin-top:18px;
+  padding:14px;
+  background: var(--bg-card);
+  border:1px solid var(--border-main);
+  border-radius:14px;
+  max-width:340px;
+  margin-left:auto;
+  margin-right:auto;
+  text-align:center;
+  box-shadow: 0 6px 18px var(--shadow-main);
+">
+
+  <button onclick="restablecerFalladas()" style="font-size:13px; padding:6px 12px; width:100%; margin-bottom:8px;">
     Restablecer todas las estadísticas
   </button>
 
-  <button onclick="restablecerTema()" style="font-size:12px; padding:4px 10px; margin-top:6px;">
-    Restablecer tema seleccionado
+  <button onclick="restablecerTema()" style="font-size:13px; padding:6px 12px; width:100%;">
+    Restablecer estadísticas del tema
   </button>
 
-  <select id="selectorTemaReset" style="padding:4px 8px; border-radius:6px; margin-top:6px;">
+  <select id="selectorTemaReset" style="
+    width:100%;
+    padding:6px 8px;
+    border-radius:8px;
+    margin-top:8px;
+    border:1px solid var(--border-main);
+    background:var(--bg-card);
+    color:var(--text-main);
+  ">
     <option value="">Selecciona un tema</option>
   </select>
+
 </div>
 
 </div>
