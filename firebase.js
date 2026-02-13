@@ -11,9 +11,24 @@ const firebaseConfig = {
   appId: "1:560675730879:web:cff0323110fe52620a1d0a"
 };
 
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+
+// Exponer Firebase al entorno global
+if (typeof window !== "undefined") {
+  window.db = db;
+  window.auth = auth;
+  window.collection = collection;
+  window.getDocs = getDocs;
+  window.doc = doc;
+  window.getDoc = getDoc;
+  window.updateDoc = updateDoc;
+  window.deleteDoc = deleteDoc;
+  window.addDoc = addDoc;
+  window.setDoc = setDoc;
+}
 
 setPersistence(auth, browserLocalPersistence)
   .then(() => {
