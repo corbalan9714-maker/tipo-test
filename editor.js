@@ -81,6 +81,7 @@ function initEditor() {
         cargarSelectRenombrar();
         cargarTemasRenombrarSubtema();
         validarRenombradoSubtema();
+        cargarTemasMover();
         // === NUEVO BLOQUE AGREGADO ===
         const temaVista = document.getElementById("temaVista");
         const subtemaVista = document.getElementById("subtemaVista");
@@ -106,6 +107,7 @@ function initEditor() {
     cargarSelectRenombrar();
     cargarTemasRenombrarSubtema();
     validarRenombradoSubtema();
+    cargarTemasMover();
     // === NUEVO BLOQUE AGREGADO ===
     const temaVista = document.getElementById("temaVista");
     const subtemaVista = document.getElementById("subtemaVista");
