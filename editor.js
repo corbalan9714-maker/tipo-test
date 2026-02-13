@@ -282,17 +282,6 @@ function guardarPregunta() {
 
   guardarBanco();
   if (window.crearBackupAutomatico) window.crearBackupAutomatico(banco);
-  if (window.guardarEnFirebase) {
-    window.guardarEnFirebase({
-      tema,
-      subtema,
-      pregunta,
-      opciones,
-      correcta,
-      feedback,
-      fecha: Date.now()
-    });
-  }
   // 🔄 Avisar al test que el banco ha cambiado
   if (window.parent) {
     window.parent.postMessage({ type: "BANCO_ACTUALIZADO" }, "*");
