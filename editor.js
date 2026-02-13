@@ -611,43 +611,6 @@ function cargarSubtemasEliminar() {
     });
 }
 
-function borrarSubtemaDesdeGestion() {
-  const temaSelect = document.getElementById("temaEliminar");
-  const subtemaSelect = document.getElementById("subtemaEliminar");
-
-  if (!temaSelect || !subtemaSelect) return;
-
-  const tema = temaSelect.value;
-  const subtema = subtemaSelect.value;
-
-  if (!tema || !subtema) {
-    alert("Selecciona un subtema primero");
-    return;
-  }
-
-  if (!banco[tema]) return;
-
-  if (!confirm(`¿Seguro que quieres borrar el subtema "${subtema}"?`)) {
-    return;
-  }
-
-  banco[tema] = banco[tema].filter(p => (p.subtema || "General") !== subtema);
-
-  // Si el tema se queda sin preguntas, borrarlo
-  if (banco[tema].length === 0) {
-    delete banco[tema];
-  }
-
-  guardarBanco();
-  if (window.crearBackupAutomatico) window.crearBackupAutomatico(banco);
-
-  cargarTemasVista();
-  cargarTemasExistentes();
-  cargarSelectEliminar();
-
-  alert(`Subtema "${subtema}" eliminado correctamente`);
-}
-
 // ====== VALIDACIÓN DE FORMULARIO (activar/desactivar botón) ======
 function prepararValidacionFormulario() {
   const campos = [
