@@ -11,6 +11,7 @@ function guardarBanco() {
 
 
 let banco = cargarBanco();
+window.banco = banco;
 let editando = null;
 let textoBusqueda = "";
 let contadorResultados = 0;
@@ -59,6 +60,7 @@ function initEditor() {
     window.cargarDesdeFirebase()
       .then(bancoFirebase => {
         banco = bancoFirebase;
+        window.banco = banco;
         // Guardar copia local para modo offline
         localStorage.setItem(STORAGE_KEY, JSON.stringify(banco));
       })
@@ -92,6 +94,7 @@ function initEditor() {
       });
   } else {
     banco = cargarBanco();
+    window.banco = banco;
     limpiarTemasVacios();
     actualizarOpciones();
     cargarTemasVista();
