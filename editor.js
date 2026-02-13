@@ -893,6 +893,7 @@ function renombrarTema() {
   cargarSelectEliminar();
   cargarSelectRenombrar();
   cargarTemasRenombrarSubtema();
+  cargarSubtemasRenombrar();
   mostrarPreguntas();
 
   // Segundo refresco tras sincronización con Firebase
@@ -903,6 +904,7 @@ function renombrarTema() {
     cargarSelectEliminar();
     cargarSelectRenombrar();
     cargarTemasRenombrarSubtema();
+    cargarSubtemasRenombrar();
     mostrarPreguntas();
   }, 400);
 
