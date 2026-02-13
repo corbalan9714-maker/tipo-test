@@ -1,17 +1,3 @@
-import {
-  cargarDesdeFirebase,
-  guardarEnFirebase,
-  actualizarPreguntaFirebase,
-  eliminarPreguntaFirebase,
-  crearBackupAutomatico
-} from "./firebase.js";
-
-window.cargarDesdeFirebase = cargarDesdeFirebase;
-window.guardarEnFirebase = guardarEnFirebase;
-window.actualizarPreguntaFirebase = actualizarPreguntaFirebase;
-window.eliminarPreguntaFirebase = eliminarPreguntaFirebase;
-window.crearBackupAutomatico = crearBackupAutomatico;
-
 /* ====== CARGA DEL BANCO ====== */
 const STORAGE_KEY = "bancoPreguntas";
 
@@ -64,12 +50,6 @@ function resaltarTexto(textoOriginal, terminoBusqueda) {
   return texto;
 }
 
-// ====== FORMATEAR NEGRITA MARKDOWN ======
-function formatearNegrita(texto) {
-  if (!texto) return "";
-  return texto.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-}
-
 /* ====== INICIALIZACIÓN ====== */
 document.addEventListener("DOMContentLoaded", initEditor);
 
@@ -89,7 +69,11 @@ function initEditor() {
       .finally(() => {
         limpiarTemasVacios();
         actualizarOpciones();
-        refrescarEditor();
+        cargarTemasVista();
+        cargarTemasExistentes();
+        cargarSelectEliminar();
+        cargarSelectRenombrar();
+        cargarTemasRenombrarSubtema();
         validarRenombradoSubtema();
         // === NUEVO BLOQUE AGREGADO ===
         const temaVista = document.getElementById("temaVista");
@@ -110,7 +94,11 @@ function initEditor() {
     banco = cargarBanco();
     limpiarTemasVacios();
     actualizarOpciones();
-    refrescarEditor();
+    cargarTemasVista();
+    cargarTemasExistentes();
+    cargarSelectEliminar();
+    cargarSelectRenombrar();
+    cargarTemasRenombrarSubtema();
     validarRenombradoSubtema();
     // === NUEVO BLOQUE AGREGADO ===
     const temaVista = document.getElementById("temaVista");
@@ -203,12 +191,6 @@ function initEditor() {
       location.reload();
     };
   }
-
-  // Forzar recarga de selectores tras inicialización completa
-  setTimeout(() => {
-    try { cargarTemasVista(); } catch(e) {}
-    try { cargarTodosLosSelectoresTemas(); } catch(e) {}
-  }, 50);
 }
 
 /* ====== CREAR / EDITAR PREGUNTA ====== */
@@ -245,7 +227,7 @@ function guardarPregunta() {
 
   // MODO EDICIÓN
   if (editando) {
-    const { tema: temaOriginal, index, id } = editando;
+    const { tema: temaOriginal, index } = editando;
     const original = banco[temaOriginal][index];
 
     const actualizada = {
@@ -261,8 +243,8 @@ function guardarPregunta() {
     banco[temaOriginal][index] = actualizada;
 
     // Sincronizar con Firebase si tiene id
-    if (id && window.actualizarPreguntaFirebase) {
-      window.actualizarPreguntaFirebase(id, {
+    if (actualizada.id && window.actualizarPreguntaFirebase) {
+      window.actualizarPreguntaFirebase(actualizada.id, {
         tema: temaOriginal,
         pregunta,
         opciones,
@@ -270,14 +252,6 @@ function guardarPregunta() {
         feedback
       });
     }
-
-    // Quitar indicador de modo edición
-    const indicador = document.getElementById("modoEdicionIndicador");
-    if (indicador) indicador.remove();
-
-    // Restaurar texto del botón guardar
-    const btnGuardar = document.querySelector("button[onclick='guardarPregunta()']");
-    if (btnGuardar) btnGuardar.textContent = "Guardar pregunta";
 
     editando = null;
   } else {
@@ -290,22 +264,21 @@ function guardarPregunta() {
       feedback,
       subtema
     });
-    // Crear en Firebase solo si es pregunta nueva
-    if (window.guardarEnFirebase) {
-      window.guardarEnFirebase({
-        tema,
-        subtema,
-        pregunta,
-        opciones,
-        correcta,
-        feedback,
-        fecha: Date.now()
-      });
-    }
   }
 
   guardarBanco();
   if (window.crearBackupAutomatico) window.crearBackupAutomatico(banco);
+  if (window.guardarEnFirebase) {
+    window.guardarEnFirebase({
+      tema,
+      subtema,
+      pregunta,
+      opciones,
+      correcta,
+      feedback,
+      fecha: Date.now()
+    });
+  }
   // 🔄 Avisar al test que el banco ha cambiado
   if (window.parent) {
     window.parent.postMessage({ type: "BANCO_ACTUALIZADO" }, "*");
@@ -387,15 +360,15 @@ function mostrarPreguntas() {
       <div style="font-size:12px; opacity:0.7; margin-bottom:4px;">
         ${tema} → ${p.subtema || "General"}
       </div>
-      <strong>${i + 1}. ${formatearNegrita(resaltarTexto(p.pregunta, textoBusqueda))}</strong><br>
+      <strong>${i + 1}. ${resaltarTexto(p.pregunta, textoBusqueda)}</strong><br>
       <ul>
-        ${(p.opciones || []).map((op, idx) =>
-          `<li ${idx === p.correcta ? 'style="font-weight:bold"' : ''}>${formatearNegrita(resaltarTexto(op, textoBusqueda))}</li>`
+        ${p.opciones.map((op, idx) =>
+          `<li ${idx === p.correcta ? 'style="font-weight:bold"' : ''}>${resaltarTexto(op, textoBusqueda)}</li>`
         ).join("")}
       </ul>
-      ${p.feedback ? `<div style="margin-top:6px; white-space:pre-line;"><em>Feedback:</em>\n${formatearNegrita(resaltarTexto(p.feedback, textoBusqueda))}</div>` : ""}
-      <button type="button" onclick="cargarParaEditar('${tema}', ${i})">Editar</button>
-      <button type="button" class="btn-borrar" onclick="borrarPregunta('${tema}', ${i})">Borrar</button>
+      ${p.feedback ? `<div style="margin-top:6px; white-space:pre-line;"><em>Feedback:</em>\n${resaltarTexto(p.feedback, textoBusqueda)}</div>` : ""}
+      <button onclick="cargarParaEditar('${tema}', ${i})">Editar</button>
+      <button class="btn-borrar" onclick="borrarPregunta('${tema}', ${i})">Borrar</button>
     `;
     contenedor.appendChild(div);
   });
@@ -416,16 +389,9 @@ function mostrarPreguntas() {
 
 function cargarParaEditar(tema, index) {
   const p = banco[tema][index];
-  editando = { tema, index, id: p.id || null };
+  editando = { tema, index };
 
   document.getElementById("tema").value = tema;
-  // === Cargar subtema en el formulario ===
-  const subtemaInput = document.getElementById("subtemaPregunta");
-  const subtemaSelect = document.getElementById("subtemaExistente");
-  const subtema = p.subtema || "General";
-
-  if (subtemaInput) subtemaInput.value = subtema;
-  if (subtemaSelect) subtemaSelect.value = subtema;
   document.getElementById("pregunta").value = p.pregunta;
   document.getElementById("feedback").value = p.feedback || "";
 
@@ -442,36 +408,6 @@ function cargarParaEditar(tema, index) {
   document.querySelectorAll('input[name="correcta"]').forEach(r => {
     r.checked = Number(r.value) === p.correcta;
   });
-
-  // Abrir el panel de edición y hacer scroll
-  const panel = document.querySelector("details");
-  if (panel) panel.open = true;
-
-  const form = document.getElementById("pregunta");
-  if (form) form.scrollIntoView({ behavior: "smooth", block: "center" });
-
-  // Indicador visual de modo edición
-  let indicador = document.getElementById("modoEdicionIndicador");
-  if (!indicador) {
-    indicador = document.createElement("div");
-    indicador.id = "modoEdicionIndicador";
-    indicador.style.background = "#fff3cd";
-    indicador.style.color = "#856404";
-    indicador.style.padding = "10px";
-    indicador.style.borderRadius = "10px";
-    indicador.style.margin = "10px 0";
-    indicador.style.fontWeight = "600";
-    indicador.textContent = "Modo edición: estás modificando una pregunta existente";
-
-    const campoPregunta = document.getElementById("pregunta");
-    if (campoPregunta && campoPregunta.parentNode) {
-      campoPregunta.parentNode.insertBefore(indicador, campoPregunta);
-    }
-  }
-
-  // Cambiar texto del botón guardar
-  const btnGuardar = document.querySelector("button[onclick='guardarPregunta()']");
-  if (btnGuardar) btnGuardar.textContent = "Guardar cambios";
 }
 
 function borrarPregunta(tema, index) {
@@ -549,43 +485,11 @@ function limpiarFormulario() {
 
 function limpiarTemasVacios() {
   Object.keys(banco).forEach(tema => {
-    if (!tema || !Array.isArray(banco[tema])) {
+    if (!tema || !Array.isArray(banco[tema]) || banco[tema].length === 0) {
       delete banco[tema];
     }
   });
   guardarBanco();
-}
-
-function cargarTodosLosSelectoresTemas() {
-  const temas = ordenarNatural(
-    Object.keys(banco).filter(t => t !== "__falladas__")
-  );
-
-  const ids = [
-    "temaExistente",
-    "temaEliminar",
-    "temaRenombrar",
-    "temaRenombrarSubtema",
-    "temaMover",
-    "nuevoTemaMover",
-    "temaParaSubtema"
-  ];
-
-  ids.forEach(id => {
-    const select = document.getElementById(id);
-    if (!select) return;
-
-    select.innerHTML = "<option value=''>-- seleccionar tema --</option>";
-
-    temas.forEach(tema => {
-      const opt = document.createElement("option");
-      opt.value = tema;
-      opt.textContent = tema;
-      select.appendChild(opt);
-    });
-
-    select.disabled = false;
-  });
 }
 
 function cargarTemasExistentes() {
@@ -673,19 +577,8 @@ function cargarSelectEliminar() {
 
 document.addEventListener("DOMContentLoaded", () => {
   const temaEliminar = document.getElementById("temaEliminar");
-  const botonEliminar = document.querySelector("button[onclick='borrarSubtemaDesdeGestion()']");
-
-  if (botonEliminar) {
-    // Estado inicial siempre desactivado
-    botonEliminar.disabled = true;
-    botonEliminar.style.opacity = "0.5";
-    botonEliminar.style.cursor = "not-allowed";
-    botonEliminar.style.pointerEvents = "none";
-  }
-
   if (temaEliminar) {
     temaEliminar.addEventListener("change", cargarSubtemasEliminar);
-    cargarSubtemasEliminar();
   }
 });
 
@@ -705,35 +598,17 @@ function cargarSubtemasEliminar() {
   });
 
   Array.from(subtemas)
-    .filter(st => st.toLowerCase() !== "general")
-    .sort((a, b) => a.localeCompare(b, "es", { sensitivity: "base" }))
+    .sort((a, b) => {
+      if (a.toLowerCase() === "general") return -1;
+      if (b.toLowerCase() === "general") return 1;
+      return a.localeCompare(b, "es", { sensitivity: "base" });
+    })
     .forEach(st => {
       const opt = document.createElement("option");
       opt.value = st;
       opt.textContent = st;
       subtemaSelect.appendChild(opt);
     });
-
-  // Activar o desactivar botón según si hay un subtema seleccionado
-  const botonEliminar = document.querySelector("button[onclick='borrarSubtemaDesdeGestion()']");
-  if (botonEliminar) {
-    const subtemaSeleccionado = subtemaSelect.value;
-    const activo = Boolean(subtemaSeleccionado);
-
-    botonEliminar.disabled = !activo;
-
-    if (activo) {
-      botonEliminar.style.opacity = "1";
-      botonEliminar.style.cursor = "pointer";
-      botonEliminar.style.pointerEvents = "auto";
-    } else {
-      botonEliminar.style.opacity = "0.5";
-      botonEliminar.style.cursor = "not-allowed";
-      botonEliminar.style.pointerEvents = "none";
-    }
-  }
-  // Añadir listener para actualizar el botón cuando cambie el subtema
-  subtemaSelect.onchange = cargarSubtemasEliminar;
 }
 
 // ====== VALIDACIÓN DE FORMULARIO (activar/desactivar botón) ======
@@ -1105,14 +980,6 @@ document.addEventListener("DOMContentLoaded", () => {
   btnCancelar.addEventListener("click", () => {
     editando = null;
     limpiarFormulario();
-
-    // Quitar indicador de modo edición
-    const indicador = document.getElementById("modoEdicionIndicador");
-    if (indicador) indicador.remove();
-
-    // Restaurar texto del botón guardar
-    const btnGuardar = document.querySelector("button[onclick='guardarPregunta()']");
-    if (btnGuardar) btnGuardar.textContent = "Guardar pregunta";
   });
 });
 // ====== SUBTEMAS EN VISTA AVANZADA ======
@@ -1310,112 +1177,3 @@ document.addEventListener("DOMContentLoaded", () => {
   subtemaMover && subtemaMover.addEventListener("change", cargarPreguntasMover);
   nuevoTemaMover && nuevoTemaMover.addEventListener("change", cargarSubtemasDestinoMover);
 });
-
-// ====== ELIMINAR SUBTEMA COMPLETO ======
-function eliminarSubtema() {
-  const tema = document.getElementById("temaEliminar")?.value;
-  const subtema = document.getElementById("subtemaEliminar")?.value;
-
-  if (!tema || !banco[tema]) return;
-  if (!subtema) return;
-
-  // Eliminar todas las preguntas de ese subtema
-  banco[tema] = (banco[tema] || []).filter(p => (p.subtema || "General") !== subtema);
-
-  // Si el tema queda vacío, eliminarlo
-  if (banco[tema].length === 0) {
-    delete banco[tema];
-  }
-
-  guardarBanco();
-  limpiarTemasVacios();
-
-  // Recargar selectores y vistas
-  try { cargarTemasVista(); } catch(e) {}
-  try { cargarTemasExistentes(); } catch(e) {}
-  try { cargarSelectEliminar(); } catch(e) {}
-  try { cargarSubtemasEliminar(); } catch(e) {}
-}
-
-window.eliminarSubtema = eliminarSubtema;
-
-function borrarSubtemaDesdeGestion() {
-  eliminarSubtema();
-}
-
-window.borrarSubtemaDesdeGestion = borrarSubtemaDesdeGestion;
-// ====== CREAR TEMA VACÍO ======
-function crearTemaEstructura() {
-  const input = document.getElementById("nuevoTemaGestion");
-  if (!input) return;
-
-  const tema = input.value.trim();
-  if (!tema) {
-    alert("Escribe un nombre de tema");
-    return;
-  }
-
-  if (!banco[tema]) {
-    banco[tema] = [];
-    guardarBanco();
-    if (window.crearBackupAutomatico) window.crearBackupAutomatico(banco);
-  }
-
-  input.value = "";
-  refrescarEditor();
-}
-
-window.crearTemaEstructura = crearTemaEstructura;
-
-// ====== CREAR SUBTEMA VACÍO ======
-function crearSubtemaVacio() {
-  const selectTema = document.getElementById("temaParaSubtema");
-  const inputSubtema = document.getElementById("nuevoSubtemaGestion");
-
-  if (!selectTema || !inputSubtema) return;
-
-  const tema = selectTema.value;
-  const subtema = inputSubtema.value.trim();
-
-  if (!tema) {
-    alert("Selecciona un tema");
-    return;
-  }
-
-  if (!subtema) {
-    alert("Escribe un nombre de subtema");
-    return;
-  }
-
-  if (!banco[tema]) banco[tema] = [];
-
-  // Crear pregunta ficticia para mantener el subtema
-  banco[tema].push({
-    pregunta: "__subtemaVacio__",
-    opciones: [""],
-    correcta: 0,
-    fallada: 0,
-    feedback: "",
-    subtema: subtema,
-    __subtemaVacio: true
-  });
-
-  guardarBanco();
-  if (window.crearBackupAutomatico) window.crearBackupAutomatico(banco);
-
-  inputSubtema.value = "";
-  refrescarEditor();
-}
-
-window.crearSubtemaVacio = crearSubtemaVacio;
-
-// ====== REFRESCAR EDITOR: recarga todos los selectores relacionados con temas ======
-function refrescarEditor() {
-  try { cargarTemasVista(); } catch(e) {}
-  try { cargarTemasExistentes(); } catch(e) {}
-  try { cargarSelectEliminar(); } catch(e) {}
-  try { cargarSelectRenombrar(); } catch(e) {}
-  try { cargarTemasRenombrarSubtema(); } catch(e) {}
-  try { cargarTemasMover(); } catch(e) {}
-  try { cargarTodosLosSelectoresTemas(); } catch(e) {}
-}

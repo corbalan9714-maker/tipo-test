@@ -1,6 +1,6 @@
-if (typeof firebase === "undefined") {
-  console.warn("Firebase no cargado. Ejecutando sin conexión.");
-} else {
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBQw64gv58J684nbD1QIAqkrIPkbVg_8DU",
@@ -11,14 +11,11 @@ const firebaseConfig = {
   appId: "1:560675730879:web:cff0323110fe52620a1d0a"
 };
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-}
-const db = firebase.firestore();
-const auth = firebase.auth();
-window.db = db;
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
-auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+setPersistence(auth, browserLocalPersistence)
   .then(() => {
     console.log("Persistencia de sesión activada");
   })
@@ -28,11 +25,11 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
 
 let usuarioActual = null;
 
-auth.onAuthStateChanged((user) => {
+onAuthStateChanged(auth, (user) => {
   usuarioActual = user;
 });
 
-async function guardarEnFirebase(pregunta) {
+export async function guardarEnFirebase(pregunta) {
   try {
     await addDoc(collection(db, "preguntas"), pregunta);
     console.log("Pregunta guardada en Firebase");
@@ -42,7 +39,7 @@ async function guardarEnFirebase(pregunta) {
 }
 window.guardarEnFirebase = guardarEnFirebase;
 
-async function cargarDesdeFirebase() {
+export async function cargarDesdeFirebase() {
   const snapshot = await getDocs(collection(db, "preguntas"));
   const banco = {};
 
@@ -58,15 +55,14 @@ async function cargarDesdeFirebase() {
       opciones: data.opciones,
       correcta: data.correcta,
       fallada: data.fallada || 0,
-      feedback: data.feedback || "",
-      subtema: data.subtema || "General"
+      feedback: data.feedback || ""
     });
   });
 
   return banco;
 }
 
-async function actualizarFallada(id, nuevoValor) {
+export async function actualizarFallada(id, nuevoValor) {
   try {
     console.log("Actualizando fallos en Firebase", id, nuevoValor);
     const ref = doc(db, "preguntas", id);
@@ -90,7 +86,7 @@ async function actualizarFallada(id, nuevoValor) {
 window.cargarDesdeFirebase = cargarDesdeFirebase;
 window.actualizarFallada = actualizarFallada;
 
-async function eliminarPreguntaFirebase(id) {
+export async function eliminarPreguntaFirebase(id) {
   try {
     const ref = doc(db, "preguntas", id);
     await deleteDoc(ref);
@@ -102,24 +98,7 @@ async function eliminarPreguntaFirebase(id) {
 
 window.eliminarPreguntaFirebase = eliminarPreguntaFirebase;
 
-async function actualizarPreguntaFirebase(id, datos) {
-  try {
-    if (!id) {
-      console.warn("ID inválido para actualización:", id);
-      return;
-    }
-
-    const ref = doc(db, "preguntas", id);
-    await updateDoc(ref, datos);
-    console.log("Pregunta actualizada en Firebase:", id);
-  } catch (err) {
-    console.error("Error al actualizar pregunta en Firebase", err);
-  }
-}
-
-window.actualizarPreguntaFirebase = actualizarPreguntaFirebase;
-
-async function crearBackupAutomatico(banco) {
+export async function crearBackupAutomatico(banco) {
   try {
     const fecha = new Date();
 
@@ -157,13 +136,14 @@ window.crearBackupAutomatico = crearBackupAutomatico;
 
 // ===== PROGRESO DE TEST SINCRONIZADO =====
 
+import { setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 window.guardarProgresoRemoto = async function (progreso) {
   try {
     if (!usuarioActual) return;
 
     const ref = doc(db, "progresos", usuarioActual.uid);
-    await ref.set(progreso);
+    await setDoc(ref, progreso);
     console.log("Progreso guardado en Firebase");
   } catch (err) {
     console.error("Error guardando progreso remoto", err);
@@ -188,4 +168,3 @@ window.cargarProgresoRemoto = async function () {
     return null;
   }
 };
-}

@@ -1,21 +1,3 @@
-import {
-  cargarDesdeFirebase,
-  guardarEnFirebase,
-  actualizarPreguntaFirebase,
-  eliminarPreguntaFirebase,
-  crearBackupAutomatico,
-  actualizarFallada,
-  guardarProgresoRemoto
-} from "./firebase.js";
-
-window.cargarDesdeFirebase = cargarDesdeFirebase;
-window.guardarEnFirebase = guardarEnFirebase;
-window.actualizarPreguntaFirebase = actualizarPreguntaFirebase;
-window.eliminarPreguntaFirebase = eliminarPreguntaFirebase;
-window.crearBackupAutomatico = crearBackupAutomatico;
-window.actualizarFallada = actualizarFallada;
-window.guardarProgresoRemoto = guardarProgresoRemoto;
-
 function ordenNatural(a, b) {
   return a.localeCompare(b, "es", {
     numeric: true,
@@ -174,16 +156,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (window.cargarDesdeFirebase) {
       banco = await window.cargarDesdeFirebase();
       console.log("Banco cargado desde Firebase (test)");
-
-      // Asegurar que todas las preguntas tengan subtema
-      Object.keys(banco).forEach(tema => {
-        if (!Array.isArray(banco[tema])) return;
-        banco[tema].forEach(p => {
-          if (!p.subtema) {
-            p.subtema = "General";
-          }
-        });
-      });
 
       // Guardar copia local para modo offline
       localStorage.setItem(STORAGE_KEY, JSON.stringify(banco));
@@ -456,9 +428,8 @@ function pintarCheckboxesTemas() {
       nombreVisible = "📌 Preguntas más falladas";
       contador = banco["__falladas__"].filter(p => (p.fallada || 0) > 0).length;
     } else {
-      const preguntasReales = (banco[tema] || []).filter(p => !p.__subtemaVacio);
-      contador = preguntasReales.length;
-      nuevas = preguntasReales.filter(p => (p.fallada || 0) === 0).length;
+      contador = banco[tema].length;
+      nuevas = banco[tema].filter(p => (p.fallada || 0) === 0).length;
     }
 
     const bloqueTema = document.createElement("div");
@@ -490,8 +461,7 @@ function pintarCheckboxesTemas() {
 
     // === Subtemas colapsables ===
     if (tema !== "__falladas__" && Array.isArray(banco[tema])) {
-      const preguntasReales = banco[tema].filter(p => !p.__subtemaVacio);
-      let subtemas = [...new Set(preguntasReales.map(p => p.subtema || "General"))];
+      let subtemas = [...new Set(banco[tema].map(p => p.subtema || "General"))];
 
       // "General" siempre primero, el resto orden natural
       subtemas = subtemas.sort((a, b) => {
@@ -1723,7 +1693,6 @@ function actualizarEstadoBotonEmpezar() {
     tooltip.style.display = hayModoActivo ? "none" : "block";
   }
 }
-
 // ===== AUTOGUARDADO PERIÓDICO DEL PROGRESO =====
 function autoGuardarProgreso() {
   const zonaTest = document.getElementById("zonaTest");
@@ -1771,4 +1740,3 @@ window.addEventListener("beforeunload", function (e) {
 window.mostrarPantallaInicial = mostrarPantallaInicial;
 window.mostrarPantallaTemas = mostrarPantallaTemas;
 window.mostrarPantallaHistorial = mostrarPantallaHistorial;
-window.iniciarTest = iniciarTest;
