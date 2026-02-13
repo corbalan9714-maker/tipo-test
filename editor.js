@@ -1359,25 +1359,9 @@ async function cargarTemasEstructura() {
 
   select.innerHTML = "<option value=''>-- seleccionar tema --</option>";
 
-  // Si Firebase está disponible, cargar desde estructuraTemas
-  if (window.getDocs && window.collection && window.db) {
-    try {
-      const snap = await window.getDocs(window.collection(window.db, "estructuraTemas"));
-      snap.forEach(docSnap => {
-        const opt = document.createElement("option");
-        opt.value = docSnap.id;
-        opt.textContent = docSnap.id;
-        select.appendChild(opt);
-      });
-      return;
-    } catch (e) {
-      console.warn("Firebase no disponible, usando temas locales");
-    }
-  }
+  const temas = await obtenerTemas();
 
-  // Fallback: usar temas del banco local
-  Object.keys(banco).forEach(tema => {
-    if (tema === "__falladas__") return;
+  temas.forEach(tema => {
     const opt = document.createElement("option");
     opt.value = tema;
     opt.textContent = tema;
