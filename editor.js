@@ -253,6 +253,14 @@ function guardarPregunta() {
       });
     }
 
+    // Quitar indicador de modo edición
+    const indicador = document.getElementById("modoEdicionIndicador");
+    if (indicador) indicador.remove();
+
+    // Restaurar texto del botón guardar
+    const btnGuardar = document.querySelector("button[onclick='guardarPregunta()']");
+    if (btnGuardar) btnGuardar.textContent = "Guardar pregunta";
+
     editando = null;
   } else {
     if (!banco[tema]) banco[tema] = [];
@@ -367,8 +375,8 @@ function mostrarPreguntas() {
         ).join("")}
       </ul>
       ${p.feedback ? `<div style="margin-top:6px; white-space:pre-line;"><em>Feedback:</em>\n${resaltarTexto(p.feedback, textoBusqueda)}</div>` : ""}
-      <button onclick="cargarParaEditar('${tema}', ${i})">Editar</button>
-      <button class="btn-borrar" onclick="borrarPregunta('${tema}', ${i})">Borrar</button>
+      <button type="button" onclick="cargarParaEditar('${tema}', ${i})">Editar</button>
+      <button type="button" class="btn-borrar" onclick="borrarPregunta('${tema}', ${i})">Borrar</button>
     `;
     contenedor.appendChild(div);
   });
@@ -392,6 +400,13 @@ function cargarParaEditar(tema, index) {
   editando = { tema, index };
 
   document.getElementById("tema").value = tema;
+  // === Cargar subtema en el formulario ===
+  const subtemaInput = document.getElementById("subtemaPregunta");
+  const subtemaSelect = document.getElementById("subtemaExistente");
+  const subtema = p.subtema || "General";
+
+  if (subtemaInput) subtemaInput.value = subtema;
+  if (subtemaSelect) subtemaSelect.value = subtema;
   document.getElementById("pregunta").value = p.pregunta;
   document.getElementById("feedback").value = p.feedback || "";
 
@@ -408,6 +423,36 @@ function cargarParaEditar(tema, index) {
   document.querySelectorAll('input[name="correcta"]').forEach(r => {
     r.checked = Number(r.value) === p.correcta;
   });
+
+  // Abrir el panel de edición y hacer scroll
+  const panel = document.querySelector("details");
+  if (panel) panel.open = true;
+
+  const form = document.getElementById("pregunta");
+  if (form) form.scrollIntoView({ behavior: "smooth", block: "center" });
+
+  // Indicador visual de modo edición
+  let indicador = document.getElementById("modoEdicionIndicador");
+  if (!indicador) {
+    indicador = document.createElement("div");
+    indicador.id = "modoEdicionIndicador";
+    indicador.style.background = "#fff3cd";
+    indicador.style.color = "#856404";
+    indicador.style.padding = "10px";
+    indicador.style.borderRadius = "10px";
+    indicador.style.margin = "10px 0";
+    indicador.style.fontWeight = "600";
+    indicador.textContent = "Modo edición: estás modificando una pregunta existente";
+
+    const campoPregunta = document.getElementById("pregunta");
+    if (campoPregunta && campoPregunta.parentNode) {
+      campoPregunta.parentNode.insertBefore(indicador, campoPregunta);
+    }
+  }
+
+  // Cambiar texto del botón guardar
+  const btnGuardar = document.querySelector("button[onclick='guardarPregunta()']");
+  if (btnGuardar) btnGuardar.textContent = "Guardar cambios";
 }
 
 function borrarPregunta(tema, index) {
@@ -980,6 +1025,14 @@ document.addEventListener("DOMContentLoaded", () => {
   btnCancelar.addEventListener("click", () => {
     editando = null;
     limpiarFormulario();
+
+    // Quitar indicador de modo edición
+    const indicador = document.getElementById("modoEdicionIndicador");
+    if (indicador) indicador.remove();
+
+    // Restaurar texto del botón guardar
+    const btnGuardar = document.querySelector("button[onclick='guardarPregunta()']");
+    if (btnGuardar) btnGuardar.textContent = "Guardar pregunta";
   });
 });
 // ====== SUBTEMAS EN VISTA AVANZADA ======
