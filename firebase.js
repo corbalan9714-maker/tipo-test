@@ -1,7 +1,3 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
 const firebaseConfig = {
   apiKey: "AIzaSyBQw64gv58J684nbD1QIAqkrIPkbVg_8DU",
   authDomain: "tipo-test-a5e4d.firebaseapp.com",
@@ -11,11 +7,11 @@ const firebaseConfig = {
   appId: "1:560675730879:web:cff0323110fe52620a1d0a"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth(app);
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const auth = firebase.auth();
 
-setPersistence(auth, browserLocalPersistence)
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
   .then(() => {
     console.log("Persistencia de sesión activada");
   })
@@ -154,14 +150,12 @@ window.crearBackupAutomatico = crearBackupAutomatico;
 
 // ===== PROGRESO DE TEST SINCRONIZADO =====
 
-import { setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
 window.guardarProgresoRemoto = async function (progreso) {
   try {
     if (!usuarioActual) return;
 
     const ref = doc(db, "progresos", usuarioActual.uid);
-    await setDoc(ref, progreso);
+    await ref.set(progreso);
     console.log("Progreso guardado en Firebase");
   } catch (err) {
     console.error("Error guardando progreso remoto", err);
