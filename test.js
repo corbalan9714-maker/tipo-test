@@ -1693,6 +1693,56 @@ function actualizarEstadoBotonEmpezar() {
     tooltip.style.display = hayModoActivo ? "none" : "block";
   }
 }
+// ====== EDITOR: MODO EDICIÓN DE PREGUNTAS ======
+
+// Función para cargar pregunta para editar (fragmento relevante)
+function cargarParaEditar(tema, index) {
+  // ...código que carga la pregunta para editar...
+  // Insertar indicador de edición y cambiar texto del botón
+  // ...
+  // (Aquí va el bloque que inserta el indicador de edición y cambia texto del botón)
+
+  // Cambiar borde del formulario en modo edición
+  const formContainer = document.getElementById("pregunta");
+  if (formContainer) {
+    formContainer.style.border = "2px solid #ffc107";
+    formContainer.style.borderRadius = "10px";
+    formContainer.style.padding = "6px";
+  }
+  // ...resto de la función...
+}
+
+// Handler para cancelar edición (fragmento relevante)
+const btnCancelarEdicion = document.getElementById("btnCancelarEdicion");
+if (btnCancelarEdicion) {
+  btnCancelarEdicion.addEventListener("click", function () {
+    // ...código que elimina el indicador de edición y restaura el texto del botón...
+    // Restaurar borde del formulario
+    const formContainer = document.getElementById("pregunta");
+    if (formContainer) {
+      formContainer.style.border = "";
+      formContainer.style.padding = "";
+    }
+    // ...resto del handler...
+  });
+}
+
+// Función para guardar pregunta (fragmento relevante)
+function guardarPregunta() {
+  // ...código...
+  if (/* modo edición */) {
+    // ...eliminar indicador de edición y restaurar texto del botón...
+    // Restaurar borde del formulario
+    const formContainer = document.getElementById("pregunta");
+    if (formContainer) {
+      formContainer.style.border = "";
+      formContainer.style.padding = "";
+    }
+    // ...resto de la función...
+  }
+  // ...resto de la función...
+}
+
 // ===== AUTOGUARDADO PERIÓDICO DEL PROGRESO =====
 function autoGuardarProgreso() {
   const zonaTest = document.getElementById("zonaTest");
