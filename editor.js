@@ -863,19 +863,25 @@ function renombrarTema() {
     return;
   }
 
-  // Renombrar en banco local
   const preguntas = banco[temaViejo] || [];
+
+  // Actualizar en Firebase cada pregunta del tema
+  preguntas.forEach(p => {
+    if (p.id && window.actualizarPreguntaFirebase) {
+      window.actualizarPreguntaFirebase(p.id, {
+        tema: temaNuevo,
+        subtema: p.subtema || "General",
+        pregunta: p.pregunta,
+        opciones: p.opciones,
+        correcta: p.correcta,
+        feedback: p.feedback || ""
+      });
+    }
+  });
+
+  // Renombrar en banco local
   banco[temaNuevo] = preguntas;
   delete banco[temaViejo];
-
-  // Actualizar en Firebase
-  if (window.actualizarTemaFirebase) {
-    preguntas.forEach(p => {
-      if (p.id) {
-        window.actualizarTemaFirebase(p.id, temaNuevo);
-      }
-    });
-  }
 
   guardarBanco();
   if (window.crearBackupAutomatico) window.crearBackupAutomatico(banco);
