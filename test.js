@@ -157,6 +157,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       banco = await window.cargarDesdeFirebase();
       console.log("Banco cargado desde Firebase (test)");
 
+      // Asegurar que todas las preguntas tengan subtema
+      Object.keys(banco).forEach(tema => {
+        if (!Array.isArray(banco[tema])) return;
+        banco[tema].forEach(p => {
+          if (!p.subtema) {
+            p.subtema = "General";
+          }
+        });
+      });
+
       // Guardar copia local para modo offline
       localStorage.setItem(STORAGE_KEY, JSON.stringify(banco));
     } else {
