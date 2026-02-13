@@ -231,7 +231,7 @@ body {
 
 
 <label>O seleccionar tema existente:</label>
-<select id="temaExistente"></select><br><br>
+<select id="temaExistente" onchange="controlarInputTema(); cargarSubtemasPorTema();"></select><br><br>
 
 <label>Subtema nuevo:</label>
 <input type="text" id="subtemaPregunta" placeholder="Ej: Ventilación, Flashover, Bombas…"><br><br>
@@ -267,7 +267,7 @@ body {
 <div>
 
 <label>Tema actual:</label><br>
-<select id="temaMover"></select><br><br>
+<select id="temaMover" onchange="cargarSubtemasMover()"></select><br><br>
 
 <label>Subtema actual:</label><br>
 <select id="subtemaMover">
@@ -321,12 +321,30 @@ body {
 <hr>
 
 <details>
+<summary style="font-size:18px; font-weight:600; margin:16px 0;">Gestión de temas y subtemas</summary>
+<div>
+<h3>Crear tema</h3>
+<input type="text" id="nuevoTemaGestion" placeholder="Nombre del nuevo tema"><br><br>
+<button onclick="crearTemaEstructura()">Crear tema</button>
+
+<h3 style="margin-top:20px;">Crear subtema</h3>
+<label>Selecciona tema:</label><br>
+<select id="temaParaSubtema">
+  <option value="">-- seleccionar tema --</option>
+</select><br><br>
+
+<input type="text" id="nuevoSubtemaGestion" placeholder="Nombre del subtema"><br><br>
+<button onclick="crearSubtemaVacio()">Crear subtema</button>
+</div>
+</details>
+<hr>
+<details>
 <summary style="font-size:18px; font-weight:600; margin:16px 0;">Eliminar temas</summary>
 <div>
 <h2>Gestión de temas</h2>
 
 <label>Selecciona un tema para eliminar:</label><br>
-<select id="temaEliminar"></select><br><br>
+<select id="temaEliminar" onchange="cargarSubtemasEliminar()"></select><br><br>
 
 <label>Selecciona subtema:</label><br>
 <select id="subtemaEliminar"></select><br><br>
@@ -360,7 +378,7 @@ body {
 <h3>Renombrar subtema</h3>
 
 <label>Selecciona tema:</label><br>
-<select id="temaRenombrarSubtema"></select><br><br>
+<select id="temaRenombrarSubtema" onchange="cargarSubtemasRenombrar()"></select><br><br>
 
 <label>Selecciona subtema:</label><br>
 <select id="subtemaRenombrar"></select><br><br>

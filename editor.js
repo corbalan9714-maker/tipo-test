@@ -75,13 +75,8 @@ function initEditor() {
       .finally(() => {
         limpiarTemasVacios();
         actualizarOpciones();
-        cargarTemasVista();
-        cargarTemasExistentes();
-        cargarSelectEliminar();
-        cargarSelectRenombrar();
-        cargarTemasRenombrarSubtema();
+        refrescarEditor();
         validarRenombradoSubtema();
-        cargarTemasMover();
         // === NUEVO BLOQUE AGREGADO ===
         const temaVista = document.getElementById("temaVista");
         const subtemaVista = document.getElementById("subtemaVista");
@@ -101,13 +96,8 @@ function initEditor() {
     banco = cargarBanco();
     limpiarTemasVacios();
     actualizarOpciones();
-    cargarTemasVista();
-    cargarTemasExistentes();
-    cargarSelectEliminar();
-    cargarSelectRenombrar();
-    cargarTemasRenombrarSubtema();
+    refrescarEditor();
     validarRenombradoSubtema();
-    cargarTemasMover();
     // === NUEVO BLOQUE AGREGADO ===
     const temaVista = document.getElementById("temaVista");
     const subtemaVista = document.getElementById("subtemaVista");
@@ -199,6 +189,12 @@ function initEditor() {
       location.reload();
     };
   }
+
+  // Forzar recarga de selectores tras inicialización completa
+  setTimeout(() => {
+    try { cargarTemasVista(); } catch(e) {}
+    try { cargarTodosLosSelectoresTemas(); } catch(e) {}
+  }, 50);
 }
 
 /* ====== CREAR / EDITAR PREGUNTA ====== */
@@ -379,7 +375,7 @@ function mostrarPreguntas() {
       </div>
       <strong>${i + 1}. ${formatearNegrita(resaltarTexto(p.pregunta, textoBusqueda))}</strong><br>
       <ul>
-        ${p.opciones.map((op, idx) =>
+        ${(p.opciones || []).map((op, idx) =>
           `<li ${idx === p.correcta ? 'style="font-weight:bold"' : ''}>${formatearNegrita(resaltarTexto(op, textoBusqueda))}</li>`
         ).join("")}
       </ul>
@@ -539,11 +535,43 @@ function limpiarFormulario() {
 
 function limpiarTemasVacios() {
   Object.keys(banco).forEach(tema => {
-    if (!tema || !Array.isArray(banco[tema]) || banco[tema].length === 0) {
+    if (!tema || !Array.isArray(banco[tema])) {
       delete banco[tema];
     }
   });
   guardarBanco();
+}
+
+function cargarTodosLosSelectoresTemas() {
+  const temas = ordenarNatural(
+    Object.keys(banco).filter(t => t !== "__falladas__")
+  );
+
+  const ids = [
+    "temaExistente",
+    "temaEliminar",
+    "temaRenombrar",
+    "temaRenombrarSubtema",
+    "temaMover",
+    "nuevoTemaMover",
+    "temaParaSubtema"
+  ];
+
+  ids.forEach(id => {
+    const select = document.getElementById(id);
+    if (!select) return;
+
+    select.innerHTML = "<option value=''>-- seleccionar tema --</option>";
+
+    temas.forEach(tema => {
+      const opt = document.createElement("option");
+      opt.value = tema;
+      opt.textContent = tema;
+      select.appendChild(opt);
+    });
+
+    select.disabled = false;
+  });
 }
 
 function cargarTemasExistentes() {
@@ -631,8 +659,19 @@ function cargarSelectEliminar() {
 
 document.addEventListener("DOMContentLoaded", () => {
   const temaEliminar = document.getElementById("temaEliminar");
+  const botonEliminar = document.querySelector("button[onclick='borrarSubtemaDesdeGestion()']");
+
+  if (botonEliminar) {
+    // Estado inicial siempre desactivado
+    botonEliminar.disabled = true;
+    botonEliminar.style.opacity = "0.5";
+    botonEliminar.style.cursor = "not-allowed";
+    botonEliminar.style.pointerEvents = "none";
+  }
+
   if (temaEliminar) {
     temaEliminar.addEventListener("change", cargarSubtemasEliminar);
+    cargarSubtemasEliminar();
   }
 });
 
@@ -652,17 +691,35 @@ function cargarSubtemasEliminar() {
   });
 
   Array.from(subtemas)
-    .sort((a, b) => {
-      if (a.toLowerCase() === "general") return -1;
-      if (b.toLowerCase() === "general") return 1;
-      return a.localeCompare(b, "es", { sensitivity: "base" });
-    })
+    .filter(st => st.toLowerCase() !== "general")
+    .sort((a, b) => a.localeCompare(b, "es", { sensitivity: "base" }))
     .forEach(st => {
       const opt = document.createElement("option");
       opt.value = st;
       opt.textContent = st;
       subtemaSelect.appendChild(opt);
     });
+
+  // Activar o desactivar botón según si hay un subtema seleccionado
+  const botonEliminar = document.querySelector("button[onclick='borrarSubtemaDesdeGestion()']");
+  if (botonEliminar) {
+    const subtemaSeleccionado = subtemaSelect.value;
+    const activo = Boolean(subtemaSeleccionado);
+
+    botonEliminar.disabled = !activo;
+
+    if (activo) {
+      botonEliminar.style.opacity = "1";
+      botonEliminar.style.cursor = "pointer";
+      botonEliminar.style.pointerEvents = "auto";
+    } else {
+      botonEliminar.style.opacity = "0.5";
+      botonEliminar.style.cursor = "not-allowed";
+      botonEliminar.style.pointerEvents = "none";
+    }
+  }
+  // Añadir listener para actualizar el botón cuando cambie el subtema
+  subtemaSelect.onchange = cargarSubtemasEliminar;
 }
 
 // ====== VALIDACIÓN DE FORMULARIO (activar/desactivar botón) ======
@@ -1239,3 +1296,112 @@ document.addEventListener("DOMContentLoaded", () => {
   subtemaMover && subtemaMover.addEventListener("change", cargarPreguntasMover);
   nuevoTemaMover && nuevoTemaMover.addEventListener("change", cargarSubtemasDestinoMover);
 });
+
+// ====== ELIMINAR SUBTEMA COMPLETO ======
+function eliminarSubtema() {
+  const tema = document.getElementById("temaEliminar")?.value;
+  const subtema = document.getElementById("subtemaEliminar")?.value;
+
+  if (!tema || !banco[tema]) return;
+  if (!subtema) return;
+
+  // Eliminar todas las preguntas de ese subtema
+  banco[tema] = (banco[tema] || []).filter(p => (p.subtema || "General") !== subtema);
+
+  // Si el tema queda vacío, eliminarlo
+  if (banco[tema].length === 0) {
+    delete banco[tema];
+  }
+
+  guardarBanco();
+  limpiarTemasVacios();
+
+  // Recargar selectores y vistas
+  try { cargarTemasVista(); } catch(e) {}
+  try { cargarTemasExistentes(); } catch(e) {}
+  try { cargarSelectEliminar(); } catch(e) {}
+  try { cargarSubtemasEliminar(); } catch(e) {}
+}
+
+window.eliminarSubtema = eliminarSubtema;
+
+function borrarSubtemaDesdeGestion() {
+  eliminarSubtema();
+}
+
+window.borrarSubtemaDesdeGestion = borrarSubtemaDesdeGestion;
+// ====== CREAR TEMA VACÍO ======
+function crearTemaEstructura() {
+  const input = document.getElementById("nuevoTemaGestion");
+  if (!input) return;
+
+  const tema = input.value.trim();
+  if (!tema) {
+    alert("Escribe un nombre de tema");
+    return;
+  }
+
+  if (!banco[tema]) {
+    banco[tema] = [];
+    guardarBanco();
+    if (window.crearBackupAutomatico) window.crearBackupAutomatico(banco);
+  }
+
+  input.value = "";
+  refrescarEditor();
+}
+
+window.crearTemaEstructura = crearTemaEstructura;
+
+// ====== CREAR SUBTEMA VACÍO ======
+function crearSubtemaVacio() {
+  const selectTema = document.getElementById("temaParaSubtema");
+  const inputSubtema = document.getElementById("nuevoSubtemaGestion");
+
+  if (!selectTema || !inputSubtema) return;
+
+  const tema = selectTema.value;
+  const subtema = inputSubtema.value.trim();
+
+  if (!tema) {
+    alert("Selecciona un tema");
+    return;
+  }
+
+  if (!subtema) {
+    alert("Escribe un nombre de subtema");
+    return;
+  }
+
+  if (!banco[tema]) banco[tema] = [];
+
+  // Crear pregunta ficticia para mantener el subtema
+  banco[tema].push({
+    pregunta: "__subtemaVacio__",
+    opciones: [""],
+    correcta: 0,
+    fallada: 0,
+    feedback: "",
+    subtema: subtema,
+    __subtemaVacio: true
+  });
+
+  guardarBanco();
+  if (window.crearBackupAutomatico) window.crearBackupAutomatico(banco);
+
+  inputSubtema.value = "";
+  refrescarEditor();
+}
+
+window.crearSubtemaVacio = crearSubtemaVacio;
+
+// ====== REFRESCAR EDITOR: recarga todos los selectores relacionados con temas ======
+function refrescarEditor() {
+  try { cargarTemasVista(); } catch(e) {}
+  try { cargarTemasExistentes(); } catch(e) {}
+  try { cargarSelectEliminar(); } catch(e) {}
+  try { cargarSelectRenombrar(); } catch(e) {}
+  try { cargarTemasRenombrarSubtema(); } catch(e) {}
+  try { cargarTemasMover(); } catch(e) {}
+  try { cargarTodosLosSelectoresTemas(); } catch(e) {}
+}

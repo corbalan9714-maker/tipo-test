@@ -438,8 +438,9 @@ function pintarCheckboxesTemas() {
       nombreVisible = "📌 Preguntas más falladas";
       contador = banco["__falladas__"].filter(p => (p.fallada || 0) > 0).length;
     } else {
-      contador = banco[tema].length;
-      nuevas = banco[tema].filter(p => (p.fallada || 0) === 0).length;
+      const preguntasReales = (banco[tema] || []).filter(p => !p.__subtemaVacio);
+      contador = preguntasReales.length;
+      nuevas = preguntasReales.filter(p => (p.fallada || 0) === 0).length;
     }
 
     const bloqueTema = document.createElement("div");
@@ -471,7 +472,8 @@ function pintarCheckboxesTemas() {
 
     // === Subtemas colapsables ===
     if (tema !== "__falladas__" && Array.isArray(banco[tema])) {
-      let subtemas = [...new Set(banco[tema].map(p => p.subtema || "General"))];
+      const preguntasReales = banco[tema].filter(p => !p.__subtemaVacio);
+      let subtemas = [...new Set(preguntasReales.map(p => p.subtema || "General"))];
 
       // "General" siempre primero, el resto orden natural
       subtemas = subtemas.sort((a, b) => {
