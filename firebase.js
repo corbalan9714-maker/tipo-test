@@ -55,7 +55,8 @@ export async function cargarDesdeFirebase() {
       opciones: data.opciones,
       correcta: data.correcta,
       fallada: data.fallada || 0,
-      feedback: data.feedback || ""
+      feedback: data.feedback || "",
+      subtema: data.subtema || "General"
     });
   });
 
