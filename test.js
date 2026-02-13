@@ -157,32 +157,15 @@ document.addEventListener("DOMContentLoaded", async () => {
       banco = await window.cargarDesdeFirebase();
       console.log("Banco cargado desde Firebase (test)");
 
-      // Cargar estructura oficial de temas y subtemas
-      if (window.cargarEstructuraTemas) {
-        const estructura = await window.cargarEstructuraTemas();
-
-        Object.keys(estructura).forEach(tema => {
-          if (!banco[tema]) banco[tema] = [];
-
-          const subtemasExistentes = new Set(
-            banco[tema].map(p => p.subtema || "General")
-          );
-
-          estructura[tema].forEach(sub => {
-            if (!subtemasExistentes.has(sub)) {
-              // Crear entrada ficticia solo para que aparezca el subtema
-              banco[tema].push({
-                pregunta: null,
-                opciones: [],
-                correcta: 0,
-                fallada: 0,
-                subtema: sub,
-                esSubtemaVacio: true
-              });
-            }
-          });
+      // Asegurar que todas las preguntas tengan subtema
+      Object.keys(banco).forEach(tema => {
+        if (!Array.isArray(banco[tema])) return;
+        banco[tema].forEach(p => {
+          if (!p.subtema) {
+            p.subtema = "General";
+          }
         });
-      }
+      });
 
       // Guardar copia local para modo offline
       localStorage.setItem(STORAGE_KEY, JSON.stringify(banco));

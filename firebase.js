@@ -116,23 +116,6 @@ export async function actualizarPreguntaFirebase(id, datos) {
 
 window.actualizarPreguntaFirebase = actualizarPreguntaFirebase;
 
-export async function cargarEstructuraTemas() {
-  const estructura = {};
-
-  const snapshot = await getDocs(collection(db, "estructuraTemas"));
-
-  snapshot.forEach(docSnap => {
-    const data = docSnap.data();
-    estructura[docSnap.id] = data.subtemas || [];
-  });
-
-  return estructura;
-}
-
-if (typeof window !== "undefined") {
-  window.cargarEstructuraTemas = cargarEstructuraTemas;
-}
-
 export async function crearBackupAutomatico(banco) {
   try {
     const fecha = new Date();

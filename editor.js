@@ -63,21 +63,10 @@ function initEditor() {
   // Cargar banco con soporte offline
   if (window.cargarDesdeFirebase) {
     window.cargarDesdeFirebase()
-      .then(async bancoFirebase => {
+      .then(bancoFirebase => {
         banco = bancoFirebase;
-
-        // Cargar estructura oficial de temas
-        if (window.cargarEstructuraTemas) {
-          const estructura = await window.cargarEstructuraTemas();
-          Object.keys(estructura).forEach(tema => {
-            if (!banco[tema]) banco[tema] = [];
-          });
-        }
-
         // Guardar copia local para modo offline
         localStorage.setItem(STORAGE_KEY, JSON.stringify(banco));
-        // Actualizar selector de temas en el editor
-        cargarTemasVista();
       })
       .catch(() => {
         console.log("Sin conexión, usando copia local (editor)");
@@ -301,24 +290,6 @@ function guardarPregunta() {
         fecha: Date.now()
       });
     }
-    // Asegurar que el subtema exista en la estructura oficial
-    if (window.cargarEstructuraTemas && window.firebase && subtema) {
-      window.cargarEstructuraTemas().then(async estructura => {
-        const subtemas = estructura[tema] || [];
-
-        if (!subtemas.includes(subtema)) {
-          const ref = window.firebase.firestore().collection("estructuraTemas").doc(tema);
-
-          if (subtemas.length === 0) {
-            await ref.set({ subtemas: [subtema] });
-          } else {
-            await ref.update({
-              subtemas: [...subtemas, subtema]
-            });
-          }
-        }
-      });
-    }
   }
 
   guardarBanco();
@@ -352,12 +323,8 @@ function cargarTemasVista() {
     cargarSubtemasVista();
     mostrarPreguntas();
   };
-
-  // Forzar carga inicial de subtemas tras renderizar temas
-  setTimeout(() => {
-    cargarSubtemasVista();
-    mostrarPreguntas();
-  }, 0);
+  cargarSubtemasVista();
+  mostrarPreguntas();
 }
 
 function mostrarPreguntas() {
@@ -570,8 +537,7 @@ function limpiarFormulario() {
 
 function limpiarTemasVacios() {
   Object.keys(banco).forEach(tema => {
-    // Solo borrar temas sin nombre o inválidos, pero NO borrar temas vacíos
-    if (!tema) {
+    if (!tema || !Array.isArray(banco[tema]) || banco[tema].length === 0) {
       delete banco[tema];
     }
   });
@@ -1037,43 +1003,25 @@ function cargarSubtemasPorTema() {
   const tema = selectTema.value;
   selectSubtema.innerHTML = "<option value=''>-- seleccionar subtema --</option>";
 
-  if (!tema) return;
+  if (!tema || !banco[tema]) return;
 
   const subtemas = new Set();
+  banco[tema].forEach(p => {
+    if (p.subtema) subtemas.add(p.subtema);
+  });
 
-  // Subtemas desde preguntas
-  if (banco[tema]) {
-    banco[tema].forEach(p => {
-      if (p.subtema) subtemas.add(p.subtema);
+  Array.from(subtemas)
+    .sort((a, b) => {
+      if (a.toLowerCase() === "general") return -1;
+      if (b.toLowerCase() === "general") return 1;
+      return a.localeCompare(b, "es", { sensitivity: "base" });
+    })
+    .forEach(st => {
+      const opt = document.createElement("option");
+      opt.value = st;
+      opt.textContent = st;
+      selectSubtema.appendChild(opt);
     });
-  }
-
-  // Subtemas desde estructura oficial
-  if (window.cargarEstructuraTemas) {
-    window.cargarEstructuraTemas().then(estructura => {
-      if (estructura[tema]) {
-        estructura[tema].forEach(st => subtemas.add(st));
-      }
-
-      Array.from(subtemas)
-        .sort((a, b) => a.localeCompare(b, "es", { sensitivity: "base" }))
-        .forEach(st => {
-          const opt = document.createElement("option");
-          opt.value = st;
-          opt.textContent = st;
-          selectSubtema.appendChild(opt);
-        });
-    });
-  } else {
-    Array.from(subtemas)
-      .sort((a, b) => a.localeCompare(b, "es", { sensitivity: "base" }))
-      .forEach(st => {
-        const opt = document.createElement("option");
-        opt.value = st;
-        opt.textContent = st;
-        selectSubtema.appendChild(opt);
-      });
-  }
 }
  
 // ====== CANCELAR EDICIÓN ======
@@ -1095,7 +1043,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 // ====== SUBTEMAS EN VISTA AVANZADA ======
-async function cargarSubtemasVista() {
+function cargarSubtemasVista() {
   const selectTema = document.getElementById("temaVista");
   const selectSubtema = document.getElementById("subtemaVista");
 
@@ -1104,24 +1052,12 @@ async function cargarSubtemasVista() {
   const tema = selectTema.value;
   selectSubtema.innerHTML = "<option value=''>Todos los subtemas</option>";
 
-  if (!tema) return;
+  if (!tema || !banco[tema]) return;
 
   const subtemas = new Set();
-
-  // Subtemas desde preguntas
-  if (banco[tema]) {
-    banco[tema].forEach(p => {
-      subtemas.add(p.subtema || "General");
-    });
-  }
-
-  // Subtemas desde estructura oficial
-  if (window.cargarEstructuraTemas) {
-    const estructura = await window.cargarEstructuraTemas();
-    if (estructura[tema]) {
-      estructura[tema].forEach(st => subtemas.add(st));
-    }
-  }
+  banco[tema].forEach(p => {
+    subtemas.add(p.subtema || "General");
+  });
 
   Array.from(subtemas)
     .sort((a, b) => {
