@@ -1741,3 +1741,4 @@ window.addEventListener("beforeunload", function (e) {
 window.mostrarPantallaInicial = mostrarPantallaInicial;
 window.mostrarPantallaTemas = mostrarPantallaTemas;
 window.mostrarPantallaHistorial = mostrarPantallaHistorial;
+window.iniciarTest = iniciarTest;
