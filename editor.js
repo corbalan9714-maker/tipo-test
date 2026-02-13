@@ -278,6 +278,18 @@ function guardarPregunta() {
       feedback,
       subtema
     });
+    // Crear en Firebase solo si es pregunta nueva
+    if (window.guardarEnFirebase) {
+      window.guardarEnFirebase({
+        tema,
+        subtema,
+        pregunta,
+        opciones,
+        correcta,
+        feedback,
+        fecha: Date.now()
+      });
+    }
   }
 
   guardarBanco();
