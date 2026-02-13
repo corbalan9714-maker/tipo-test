@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc, query, orderBy, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
@@ -17,18 +17,16 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 // Exponer Firebase al entorno global
-if (typeof window !== "undefined") {
-  window.db = db;
-  window.auth = auth;
-  window.collection = collection;
-  window.getDocs = getDocs;
-  window.doc = doc;
-  window.getDoc = getDoc;
-  window.updateDoc = updateDoc;
-  window.deleteDoc = deleteDoc;
-  window.addDoc = addDoc;
-  window.setDoc = setDoc;
-}
+window.db = db;
+window.auth = auth;
+window.collection = collection;
+window.getDocs = getDocs;
+window.doc = doc;
+window.getDoc = getDoc;
+window.updateDoc = updateDoc;
+window.deleteDoc = deleteDoc;
+window.addDoc = addDoc;
+window.setDoc = setDoc;
 
 setPersistence(auth, browserLocalPersistence)
   .then(() => {
@@ -169,7 +167,6 @@ window.crearBackupAutomatico = crearBackupAutomatico;
 
 // ===== PROGRESO DE TEST SINCRONIZADO =====
 
-import { setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 window.guardarProgresoRemoto = async function (progreso) {
   try {
