@@ -82,7 +82,6 @@ function initEditor() {
         cargarTemasRenombrarSubtema();
         validarRenombradoSubtema();
         cargarTemasMover();
-        cargarTemasEstructura();
         // === NUEVO BLOQUE AGREGADO ===
         const temaVista = document.getElementById("temaVista");
         const subtemaVista = document.getElementById("subtemaVista");
@@ -109,7 +108,6 @@ function initEditor() {
     cargarTemasRenombrarSubtema();
     validarRenombradoSubtema();
     cargarTemasMover();
-    cargarTemasEstructura();
     // === NUEVO BLOQUE AGREGADO ===
     const temaVista = document.getElementById("temaVista");
     const subtemaVista = document.getElementById("subtemaVista");
@@ -310,25 +308,25 @@ function guardarPregunta() {
 }
 
 /* ====== VISTA AVANZADA ====== */
-async function cargarTemasVista() {
+function cargarTemasVista() {
   const select = document.getElementById("temaVista");
   if (!select) return;
 
   select.innerHTML = "";
+  ordenarNatural(Object.keys(banco).filter(t => t !== "__falladas__"))
+    .forEach(tema => {
+      const opt = document.createElement("option");
+      opt.value = tema;
+      opt.textContent = tema;
+      select.appendChild(opt);
+    });
 
-  const temas = await obtenerTemas();
-
-  temas.forEach(tema => {
-    const option = document.createElement("option");
-    option.value = tema;
-    option.textContent = tema;
-    select.appendChild(option);
-  });
-
-  if (temas.length > 0) {
+  select.onchange = () => {
     cargarSubtemasVista();
     mostrarPreguntas();
-  }
+  };
+  cargarSubtemasVista();
+  mostrarPreguntas();
 }
 
 function mostrarPreguntas() {
@@ -998,7 +996,7 @@ function validarRenombradoSubtema() {
   boton.style.cursor = valido ? "pointer" : "not-allowed";
 }
 // ====== SUBTEMAS POR TEMA ======
-async function cargarSubtemasPorTema() {
+function cargarSubtemasPorTema() {
   const selectTema = document.getElementById("temaExistente");
   const selectSubtema = document.getElementById("subtemaExistente");
 
@@ -1007,16 +1005,25 @@ async function cargarSubtemasPorTema() {
   const tema = selectTema.value;
   selectSubtema.innerHTML = "<option value=''>-- seleccionar subtema --</option>";
 
-  if (!tema) return;
+  if (!tema || !banco[tema]) return;
 
-  const lista = await obtenerSubtemas(tema);
-
-  lista.forEach(st => {
-    const opt = document.createElement("option");
-    opt.value = st;
-    opt.textContent = st;
-    selectSubtema.appendChild(opt);
+  const subtemas = new Set();
+  banco[tema].forEach(p => {
+    if (p.subtema) subtemas.add(p.subtema);
   });
+
+  Array.from(subtemas)
+    .sort((a, b) => {
+      if (a.toLowerCase() === "general") return -1;
+      if (b.toLowerCase() === "general") return 1;
+      return a.localeCompare(b, "es", { sensitivity: "base" });
+    })
+    .forEach(st => {
+      const opt = document.createElement("option");
+      opt.value = st;
+      opt.textContent = st;
+      selectSubtema.appendChild(opt);
+    });
 }
  
 // ====== CANCELAR EDICIÓN ======
@@ -1037,62 +1044,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btnGuardar) btnGuardar.textContent = "Guardar pregunta";
   });
 });
-
 // ====== SUBTEMAS EN VISTA AVANZADA ======
-
-async function obtenerTemas() {
-  const temas = new Set(Object.keys(banco));
-
-  // Quitar especiales
-  temas.delete("__falladas__");
-
-  // Añadir temas de estructura
-  if (window.cargarEstructuraTemas) {
-    try {
-      const estructura = await window.cargarEstructuraTemas();
-      if (estructura) {
-        Object.keys(estructura).forEach(t => temas.add(t));
-      }
-    } catch (e) {
-      console.warn("No se pudo cargar estructuraTemas", e);
-    }
-  }
-
-  return Array.from(temas).sort((a, b) =>
-    a.localeCompare(b, "es", { sensitivity: "base" })
-  );
-}
-
-async function obtenerSubtemas(tema) {
-  const subtemas = new Set();
-
-  // Subtemas desde preguntas
-  if (banco[tema]) {
-    banco[tema].forEach(p => {
-      subtemas.add(p.subtema || "General");
-    });
-  }
-
-  // Subtemas desde estructuraTemas
-  if (window.cargarEstructuraTemas) {
-    try {
-      const estructura = await window.cargarEstructuraTemas();
-      if (estructura && estructura[tema]) {
-        estructura[tema].forEach(st => subtemas.add(st));
-      }
-    } catch (e) {
-      console.warn("No se pudo cargar estructuraTemas", e);
-    }
-  }
-
-  return Array.from(subtemas).sort((a, b) => {
-    if (a.toLowerCase() === "general") return -1;
-    if (b.toLowerCase() === "general") return 1;
-    return a.localeCompare(b, "es", { sensitivity: "base" });
-  });
-}
-
-async function cargarSubtemasVista() {
+function cargarSubtemasVista() {
   const selectTema = document.getElementById("temaVista");
   const selectSubtema = document.getElementById("subtemaVista");
 
@@ -1101,16 +1054,25 @@ async function cargarSubtemasVista() {
   const tema = selectTema.value;
   selectSubtema.innerHTML = "<option value=''>Todos los subtemas</option>";
 
-  if (!tema) return;
+  if (!tema || !banco[tema]) return;
 
-  const lista = await obtenerSubtemas(tema);
-
-  lista.forEach(st => {
-    const opt = document.createElement("option");
-    opt.value = st;
-    opt.textContent = st;
-    selectSubtema.appendChild(opt);
+  const subtemas = new Set();
+  banco[tema].forEach(p => {
+    subtemas.add(p.subtema || "General");
   });
+
+  Array.from(subtemas)
+    .sort((a, b) => {
+      if (a.toLowerCase() === "general") return -1;
+      if (b.toLowerCase() === "general") return 1;
+      return a.localeCompare(b, "es", { sensitivity: "base" });
+    })
+    .forEach(st => {
+      const opt = document.createElement("option");
+      opt.value = st;
+      opt.textContent = st;
+      selectSubtema.appendChild(opt);
+    });
 
   selectSubtema.onchange = mostrarPreguntas;
 }
@@ -1276,100 +1238,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
   subtemaMover && subtemaMover.addEventListener("change", cargarPreguntasMover);
   nuevoTemaMover && nuevoTemaMover.addEventListener("change", cargarSubtemasDestinoMover);
-});
-
-// ====== GESTIÓN DE ESTRUCTURA DE TEMAS ======
-async function crearTemaEstructura() {
-  const input = document.getElementById("nuevoTemaEstructura");
-  if (!input) return;
-
-  const nombre = input.value.trim();
-  if (!nombre) {
-    alert("Escribe un nombre de tema");
-    return;
-  }
-
-  if (!window.db || !window.setDoc || !window.doc) {
-    alert("Firebase no está disponible");
-    return;
-  }
-
-  try {
-    await window.setDoc(
-      window.doc(window.db, "estructuraTemas", nombre),
-      { subtemas: [] },
-      { merge: true }
-    );
-
-    input.value = "";
-    alert("Tema creado correctamente");
-    cargarTemasEstructura();
-  } catch (e) {
-    console.error(e);
-    alert("Error al crear el tema");
-  }
-}
-
-async function crearSubtemaEstructura() {
-  const temaSelect = document.getElementById("temaEstructura");
-  const input = document.getElementById("nuevoSubtemaEstructura");
-
-  if (!temaSelect || !input) return;
-
-  const tema = temaSelect.value;
-  const subtema = input.value.trim();
-
-  if (!tema) {
-    alert("Selecciona un tema");
-    return;
-  }
-
-  if (!subtema) {
-    alert("Escribe un subtema");
-    return;
-  }
-
-  try {
-    const ref = window.doc(window.db, "estructuraTemas", tema);
-    const snap = await window.getDoc(ref);
-
-    let lista = [];
-    if (snap.exists()) {
-      lista = snap.data().subtemas || [];
-    }
-
-    if (!lista.includes(subtema)) {
-      lista.push(subtema);
-    }
-
-    await window.setDoc(ref, { subtemas: lista }, { merge: true });
-
-    input.value = "";
-    alert("Subtema creado correctamente");
-    cargarTemasEstructura();
-  } catch (e) {
-    console.error(e);
-    alert("Error al crear subtema");
-  }
-}
-
-async function cargarTemasEstructura() {
-  const select = document.getElementById("temaEstructura");
-  if (!select) return;
-
-  select.innerHTML = "<option value=''>-- seleccionar tema --</option>";
-
-  const temas = await obtenerTemas();
-
-  temas.forEach(tema => {
-    const opt = document.createElement("option");
-    opt.value = tema;
-    opt.textContent = tema;
-    select.appendChild(opt);
-  });
-}
-
-// Cargar temas de estructura al iniciar
-window.addEventListener("DOMContentLoaded", () => {
-  setTimeout(cargarTemasEstructura, 500);
 });
