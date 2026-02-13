@@ -23,7 +23,7 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL)
 
 let usuarioActual = null;
 
-onAuthStateChanged(auth, (user) => {
+auth.onAuthStateChanged((user) => {
   usuarioActual = user;
 });
 
