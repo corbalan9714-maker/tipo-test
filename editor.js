@@ -236,7 +236,7 @@ function guardarPregunta() {
       correcta,
       fallada: original.fallada || 0,
       feedback,
-      subtema: original.subtema || subtema,
+      subtema: subtema,
       id: original.id
     };
 
