@@ -29,7 +29,7 @@ onAuthStateChanged(auth, (user) => {
   usuarioActual = user;
 });
 
-export async function guardarEnFirebase(pregunta) {
+async function guardarEnFirebase(pregunta) {
   try {
     await addDoc(collection(db, "preguntas"), pregunta);
     console.log("Pregunta guardada en Firebase");
@@ -39,7 +39,7 @@ export async function guardarEnFirebase(pregunta) {
 }
 window.guardarEnFirebase = guardarEnFirebase;
 
-export async function cargarDesdeFirebase() {
+async function cargarDesdeFirebase() {
   const snapshot = await getDocs(collection(db, "preguntas"));
   const banco = {};
 
@@ -63,7 +63,7 @@ export async function cargarDesdeFirebase() {
   return banco;
 }
 
-export async function actualizarFallada(id, nuevoValor) {
+async function actualizarFallada(id, nuevoValor) {
   try {
     console.log("Actualizando fallos en Firebase", id, nuevoValor);
     const ref = doc(db, "preguntas", id);
@@ -87,7 +87,7 @@ export async function actualizarFallada(id, nuevoValor) {
 window.cargarDesdeFirebase = cargarDesdeFirebase;
 window.actualizarFallada = actualizarFallada;
 
-export async function eliminarPreguntaFirebase(id) {
+async function eliminarPreguntaFirebase(id) {
   try {
     const ref = doc(db, "preguntas", id);
     await deleteDoc(ref);
@@ -99,7 +99,7 @@ export async function eliminarPreguntaFirebase(id) {
 
 window.eliminarPreguntaFirebase = eliminarPreguntaFirebase;
 
-export async function actualizarPreguntaFirebase(id, datos) {
+async function actualizarPreguntaFirebase(id, datos) {
   try {
     if (!id) {
       console.warn("ID inválido para actualización:", id);
@@ -116,7 +116,7 @@ export async function actualizarPreguntaFirebase(id, datos) {
 
 window.actualizarPreguntaFirebase = actualizarPreguntaFirebase;
 
-export async function crearBackupAutomatico(banco) {
+async function crearBackupAutomatico(banco) {
   try {
     const fecha = new Date();
 
