@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, addDoc, getDocs, doc, getDoc, updateDoc, deleteDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBQw64gv58J684nbD1QIAqkrIPkbVg_8DU",
@@ -14,6 +14,14 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+
+setPersistence(auth, browserLocalPersistence)
+  .then(() => {
+    console.log("Persistencia de sesión activada");
+  })
+  .catch((error) => {
+    console.error("Error en persistencia:", error);
+  });
 
 let usuarioActual = null;
 
@@ -47,7 +55,8 @@ export async function cargarDesdeFirebase() {
       opciones: data.opciones,
       correcta: data.correcta,
       fallada: data.fallada || 0,
-      feedback: data.feedback || ""
+      feedback: data.feedback || "",
+      subtema: data.subtema || "General"
     });
   });
 
@@ -89,6 +98,23 @@ export async function eliminarPreguntaFirebase(id) {
 }
 
 window.eliminarPreguntaFirebase = eliminarPreguntaFirebase;
+
+export async function actualizarPreguntaFirebase(id, datos) {
+  try {
+    if (!id) {
+      console.warn("ID inválido para actualización:", id);
+      return;
+    }
+
+    const ref = doc(db, "preguntas", id);
+    await updateDoc(ref, datos);
+    console.log("Pregunta actualizada en Firebase:", id);
+  } catch (err) {
+    console.error("Error al actualizar pregunta en Firebase", err);
+  }
+}
+
+window.actualizarPreguntaFirebase = actualizarPreguntaFirebase;
 
 export async function crearBackupAutomatico(banco) {
   try {
