@@ -157,60 +157,16 @@
     <iframe id="iframeTest" src="test.html"></iframe>
   </main>
 
-  <!-- IMPORTANTE: app.js ES MÓDULO -->
+  <!-- Firebase CDN (versión global v8) -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+  <!-- Configuración Firebase -->
+  <script src="firebase.js"></script>
+
+  <!-- Lógica principal -->
   <script src="app.js"></script>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBQw64gv58J684nbD1QIAqkrIPkbVg_8DU",
-      authDomain: "tipo-test-a5e4d.firebaseapp.com",
-      projectId: "tipo-test-a5e4d",
-      storageBucket: "tipo-test-a5e4d.firebasestorage.app",
-      messagingSenderId: "560675730879",
-      appId: "1:560675730879:web:cff0323110fe52620a1d0a"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-
-    // AUTH
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
-
-    const btnLogin = document.getElementById("btnLogin");
-    const userInfo = document.getElementById("userInfo");
-    const btnLogout = document.getElementById("btnLogout");
-
-    btnLogout.onclick = async () => {
-      const confirmar = confirm("¿Seguro que quieres cerrar sesión?");
-      if (!confirmar) return;
-      await signOut(auth);
-    };
-
-    btnLogin.onclick = async () => {
-      await signInWithPopup(auth, provider);
-    };
-
-    const loginScreen = document.getElementById("loginScreen");
-
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        userInfo.textContent = "👤 " + user.displayName;
-        window.currentUser = user;
-        loginScreen.style.display = "none";
-        btnLogout.style.display = "inline-block";
-      } else {
-        userInfo.textContent = "";
-        window.currentUser = null;
-        loginScreen.style.display = "flex";
-        btnLogout.style.display = "none";
-      }
-    });
-
-</script>
 
   <script>
 if ("serviceWorker" in navigator) {
