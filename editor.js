@@ -971,6 +971,12 @@ function cargarSubtemasPorTema() {
       selectSubtema.appendChild(opt);
     });
 }
+
+function cargarSubtemas() {
+  cargarSubtemasPorTema();
+}
+
+window.cargarSubtemas = cargarSubtemas;
  
 // ====== CANCELAR EDICIÓN ======
 document.addEventListener("DOMContentLoaded", () => {
