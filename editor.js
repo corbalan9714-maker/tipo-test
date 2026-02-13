@@ -1037,25 +1037,43 @@ function cargarSubtemasPorTema() {
   const tema = selectTema.value;
   selectSubtema.innerHTML = "<option value=''>-- seleccionar subtema --</option>";
 
-  if (!tema || !banco[tema]) return;
+  if (!tema) return;
 
   const subtemas = new Set();
-  banco[tema].forEach(p => {
-    if (p.subtema) subtemas.add(p.subtema);
-  });
 
-  Array.from(subtemas)
-    .sort((a, b) => {
-      if (a.toLowerCase() === "general") return -1;
-      if (b.toLowerCase() === "general") return 1;
-      return a.localeCompare(b, "es", { sensitivity: "base" });
-    })
-    .forEach(st => {
-      const opt = document.createElement("option");
-      opt.value = st;
-      opt.textContent = st;
-      selectSubtema.appendChild(opt);
+  // Subtemas desde preguntas
+  if (banco[tema]) {
+    banco[tema].forEach(p => {
+      if (p.subtema) subtemas.add(p.subtema);
     });
+  }
+
+  // Subtemas desde estructura oficial
+  if (window.cargarEstructuraTemas) {
+    window.cargarEstructuraTemas().then(estructura => {
+      if (estructura[tema]) {
+        estructura[tema].forEach(st => subtemas.add(st));
+      }
+
+      Array.from(subtemas)
+        .sort((a, b) => a.localeCompare(b, "es", { sensitivity: "base" }))
+        .forEach(st => {
+          const opt = document.createElement("option");
+          opt.value = st;
+          opt.textContent = st;
+          selectSubtema.appendChild(opt);
+        });
+    });
+  } else {
+    Array.from(subtemas)
+      .sort((a, b) => a.localeCompare(b, "es", { sensitivity: "base" }))
+      .forEach(st => {
+        const opt = document.createElement("option");
+        opt.value = st;
+        opt.textContent = st;
+        selectSubtema.appendChild(opt);
+      });
+  }
 }
  
 // ====== CANCELAR EDICIÓN ======
