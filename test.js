@@ -1,3 +1,21 @@
+import {
+  cargarDesdeFirebase,
+  guardarEnFirebase,
+  actualizarPreguntaFirebase,
+  eliminarPreguntaFirebase,
+  crearBackupAutomatico,
+  actualizarFallada,
+  guardarProgresoRemoto
+} from "./firebase.js";
+
+window.cargarDesdeFirebase = cargarDesdeFirebase;
+window.guardarEnFirebase = guardarEnFirebase;
+window.actualizarPreguntaFirebase = actualizarPreguntaFirebase;
+window.eliminarPreguntaFirebase = eliminarPreguntaFirebase;
+window.crearBackupAutomatico = crearBackupAutomatico;
+window.actualizarFallada = actualizarFallada;
+window.guardarProgresoRemoto = guardarProgresoRemoto;
+
 function ordenNatural(a, b) {
   return a.localeCompare(b, "es", {
     numeric: true,

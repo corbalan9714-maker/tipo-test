@@ -1,3 +1,17 @@
+import {
+  cargarDesdeFirebase,
+  guardarEnFirebase,
+  actualizarPreguntaFirebase,
+  eliminarPreguntaFirebase,
+  crearBackupAutomatico
+} from "./firebase.js";
+
+window.cargarDesdeFirebase = cargarDesdeFirebase;
+window.guardarEnFirebase = guardarEnFirebase;
+window.actualizarPreguntaFirebase = actualizarPreguntaFirebase;
+window.eliminarPreguntaFirebase = eliminarPreguntaFirebase;
+window.crearBackupAutomatico = crearBackupAutomatico;
+
 /* ====== CARGA DEL BANCO ====== */
 const STORAGE_KEY = "bancoPreguntas";
 
