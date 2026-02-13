@@ -1073,7 +1073,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 // ====== SUBTEMAS EN VISTA AVANZADA ======
-function cargarSubtemasVista() {
+async function cargarSubtemasVista() {
   const selectTema = document.getElementById("temaVista");
   const selectSubtema = document.getElementById("subtemaVista");
 
@@ -1082,12 +1082,24 @@ function cargarSubtemasVista() {
   const tema = selectTema.value;
   selectSubtema.innerHTML = "<option value=''>Todos los subtemas</option>";
 
-  if (!tema || !banco[tema]) return;
+  if (!tema) return;
 
   const subtemas = new Set();
-  banco[tema].forEach(p => {
-    subtemas.add(p.subtema || "General");
-  });
+
+  // Subtemas desde preguntas
+  if (banco[tema]) {
+    banco[tema].forEach(p => {
+      subtemas.add(p.subtema || "General");
+    });
+  }
+
+  // Subtemas desde estructura oficial
+  if (window.cargarEstructuraTemas) {
+    const estructura = await window.cargarEstructuraTemas();
+    if (estructura[tema]) {
+      estructura[tema].forEach(st => subtemas.add(st));
+    }
+  }
 
   Array.from(subtemas)
     .sort((a, b) => {
