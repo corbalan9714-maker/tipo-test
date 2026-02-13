@@ -63,8 +63,17 @@ function initEditor() {
   // Cargar banco con soporte offline
   if (window.cargarDesdeFirebase) {
     window.cargarDesdeFirebase()
-      .then(bancoFirebase => {
+      .then(async bancoFirebase => {
         banco = bancoFirebase;
+
+        // Cargar estructura oficial de temas
+        if (window.cargarEstructuraTemas) {
+          const estructura = await window.cargarEstructuraTemas();
+          Object.keys(estructura).forEach(tema => {
+            if (!banco[tema]) banco[tema] = [];
+          });
+        }
+
         // Guardar copia local para modo offline
         localStorage.setItem(STORAGE_KEY, JSON.stringify(banco));
       })
