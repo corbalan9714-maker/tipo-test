@@ -703,23 +703,22 @@ function cargarSubtemasEliminar() {
   // Activar o desactivar botón según si hay un subtema seleccionado
   const botonEliminar = document.querySelector("button[onclick='borrarSubtemaDesdeGestion()']");
   if (botonEliminar) {
-    const subtemaSeleccionado = subtemaSelect.value;
-    const activo = Boolean(subtemaSeleccionado);
+    const actualizarEstadoBoton = () => {
+      const subtemaSeleccionado = subtemaSelect.value;
+      const activo = Boolean(subtemaSeleccionado);
 
-    botonEliminar.disabled = !activo;
+      botonEliminar.disabled = !activo;
+      botonEliminar.style.opacity = activo ? "1" : "0.5";
+      botonEliminar.style.cursor = activo ? "pointer" : "not-allowed";
+      botonEliminar.style.pointerEvents = activo ? "auto" : "none";
+    };
 
-    if (activo) {
-      botonEliminar.style.opacity = "1";
-      botonEliminar.style.cursor = "pointer";
-      botonEliminar.style.pointerEvents = "auto";
-    } else {
-      botonEliminar.style.opacity = "0.5";
-      botonEliminar.style.cursor = "not-allowed";
-      botonEliminar.style.pointerEvents = "none";
-    }
+    // Estado inicial
+    actualizarEstadoBoton();
+
+    // Escuchar cambios reales del selector
+    subtemaSelect.onchange = actualizarEstadoBoton;
   }
-  // Añadir listener para actualizar el botón cuando cambie el subtema
-  subtemaSelect.onchange = cargarSubtemasEliminar;
 }
 
 // ====== VALIDACIÓN DE FORMULARIO (activar/desactivar botón) ======
