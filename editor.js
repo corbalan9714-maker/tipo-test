@@ -1815,8 +1815,13 @@ async function cargarPapelera() {
           subtemasTexto;
       }
 
-      div.appendChild(btnRestaurar);
-      div.appendChild(btnEliminar);
+      // Append the buttons in a safe container always
+      const botones = document.createElement("div");
+      botones.style.marginTop = "6px";
+      botones.appendChild(btnRestaurar);
+      botones.appendChild(btnEliminar);
+
+      div.appendChild(botones);
       cont.appendChild(div);
     }
   } catch (err) {
