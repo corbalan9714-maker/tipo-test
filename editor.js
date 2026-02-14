@@ -578,7 +578,7 @@ async function cargarTemasExistentes() {
       });
     }
 
-    // Fallback: usar temas del banco local si Firebase falla o está vacío
+    // Fallback a banco local si no hay datos de Firebase
     if (temas.length === 0) {
       temas = Object.keys(banco || {});
     }
@@ -604,25 +604,8 @@ async function cargarTemasExistentes() {
   } catch (err) {
     console.error("Error cargando temas:", err);
 
-    // Fallback total a banco local
-    const temas = Object.keys(banco || {});
+    // Si Firebase falla, no cargar temas
     if (selectTema) selectTema.innerHTML = "";
-
-    temas.forEach(nombre => {
-      if (selectExistente) {
-        const opt1 = document.createElement("option");
-        opt1.value = nombre;
-        opt1.textContent = nombre;
-        selectExistente.appendChild(opt1);
-      }
-
-      if (selectTema) {
-        const opt2 = document.createElement("option");
-        opt2.value = nombre;
-        opt2.textContent = nombre;
-        selectTema.appendChild(opt2);
-      }
-    });
   }
   controlarInputTema();
 }
@@ -678,13 +661,34 @@ function borrarTemaDesdeGestion() {
 
 
 // ====== GESTIÓN DE TEMAS: Selector y borrado desde sección independiente ======
-function cargarSelectEliminar() {
+async function cargarSelectEliminar() {
   const select = document.getElementById("temaEliminar");
   if (!select) return;
 
   select.innerHTML = "<option value=''>-- seleccionar --</option>";
 
-  ordenarNatural(Object.keys(banco)).forEach(tema => {
+  let temas = [];
+
+  try {
+    if (window.db && window.getDocs && window.collection) {
+      const snapshot = await window.getDocs(
+        window.collection(window.db, "Temas")
+      );
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if (data && data.nombre) temas.push(data.nombre);
+      });
+    }
+  } catch (err) {
+    console.error("Error cargando temas para eliminar:", err);
+  }
+
+  // Fallback a banco local si Firebase no devuelve temas
+  if (temas.length === 0) {
+    temas = Object.keys(banco || {});
+  }
+
+  ordenarNatural(temas).forEach(tema => {
     if (tema === "__falladas__") return;
 
     const opt = document.createElement("option");
@@ -979,13 +983,34 @@ function renombrarTema() {
   alert(`Tema renombrado a "${temaNuevo}"`);
 }
 
-function cargarSelectRenombrar() {
+async function cargarSelectRenombrar() {
   const select = document.getElementById("temaRenombrar");
   if (!select) return;
 
   select.innerHTML = "<option value=''>-- seleccionar --</option>";
 
-  ordenarNatural(Object.keys(banco)).forEach(tema => {
+  let temas = [];
+
+  try {
+    if (window.db && window.getDocs && window.collection) {
+      const snapshot = await window.getDocs(
+        window.collection(window.db, "Temas")
+      );
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        if (data && data.nombre) temas.push(data.nombre);
+      });
+    }
+  } catch (err) {
+    console.error("Error cargando temas para renombrar:", err);
+  }
+
+  // Fallback a banco local si Firebase no devuelve temas
+  if (temas.length === 0) {
+    temas = Object.keys(banco || {});
+  }
+
+  ordenarNatural(temas).forEach(tema => {
     if (tema === "__falladas__") return;
 
     const opt = document.createElement("option");
@@ -1240,8 +1265,10 @@ async function cargarTemasMover() {
   let temas = [];
 
   try {
-    if (window.db && window.db.collection) {
-      const snapshot = await window.db.collection("Temas").get();
+    if (window.db && window.getDocs && window.collection) {
+      const snapshot = await window.getDocs(
+        window.collection(window.db, "Temas")
+      );
       snapshot.forEach(doc => {
         const data = doc.data();
         if (data && data.nombre) temas.push(data.nombre);
@@ -1251,7 +1278,7 @@ async function cargarTemasMover() {
     console.error("Error cargando temas para mover:", err);
   }
 
-  // Fallback a banco local si Firebase falla o no devuelve datos
+  // Fallback a banco local si Firebase no devuelve temas
   if (temas.length === 0) {
     temas = Object.keys(banco || {});
   }
