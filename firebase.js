@@ -18,6 +18,7 @@ window.doc = doc;
 window.setDoc = setDoc;
 window.collection = collection;
 window.getDocs = getDocs;
+window.deleteDoc = deleteDoc;
 const auth = getAuth(app);
 
 setPersistence(auth, browserLocalPersistence)
