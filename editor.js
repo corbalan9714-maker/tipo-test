@@ -547,20 +547,39 @@ function limpiarTemasVacios() {
 }
 
 async function cargarTemasExistentes() {
-  const select = document.getElementById("temaExistente");
-  if (!select || !window.db) return;
+  const selectExistente = document.getElementById("temaExistente");
+  const selectTema = document.getElementById("tema");
+  if ((!selectExistente && !selectTema) || !window.db) return;
 
-  select.innerHTML = "<option value=''>-- seleccionar --</option>";
+  const dbRef = window.db;
+
+  if (selectExistente) {
+    selectExistente.innerHTML = "<option value=''>-- seleccionar --</option>";
+  }
 
   try {
-    const snapshot = await db.collection("Temas").get();
+    const snapshot = await dbRef.collection("Temas").get();
+
+    if (selectTema) {
+      selectTema.innerHTML = "";
+    }
 
     snapshot.forEach(doc => {
       const data = doc.data();
-      const opt = document.createElement("option");
-      opt.value = data.nombre;
-      opt.textContent = data.nombre;
-      select.appendChild(opt);
+
+      if (selectExistente) {
+        const opt1 = document.createElement("option");
+        opt1.value = data.nombre;
+        opt1.textContent = data.nombre;
+        selectExistente.appendChild(opt1);
+      }
+
+      if (selectTema) {
+        const opt2 = document.createElement("option");
+        opt2.value = data.nombre;
+        opt2.textContent = data.nombre;
+        selectTema.appendChild(opt2);
+      }
     });
 
   } catch (err) {
@@ -1177,11 +1196,13 @@ async function cargarTemasMover() {
   const selectNuevoTema = document.getElementById("nuevoTemaMover");
   if (!selectTema || !selectNuevoTema || !window.db) return;
 
+  const dbRef = window.db;
+
   selectTema.innerHTML = "<option value=''>-- seleccionar tema --</option>";
   selectNuevoTema.innerHTML = "<option value=''>-- seleccionar tema destino --</option>";
 
   try {
-    const snapshot = await db.collection("Temas").get();
+    const snapshot = await dbRef.collection("Temas").get();
 
     snapshot.forEach(doc => {
       const data = doc.data();
