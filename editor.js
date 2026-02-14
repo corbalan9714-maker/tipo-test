@@ -1785,10 +1785,10 @@ async function cargarPapelera() {
 
       if (data.tipo === "pregunta") {
         btn.onclick = () => restaurarPregunta(docSnap.id, data);
-        div.textContent = "Pregunta: " + (data.nombre || "(sin texto)");
+        div.innerHTML = "<strong>Pregunta:</strong> " + (data.nombre || "(sin texto)");
       } else {
         btn.onclick = () => restaurarTema(docSnap.id, data);
-        div.textContent = data.nombre;
+        div.innerHTML = "<strong>Tema:</strong> " + (data.nombre || "(sin nombre)");
       }
       div.appendChild(btn);
       cont.appendChild(div);
