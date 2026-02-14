@@ -1466,6 +1466,8 @@ async function crearTemaVacio() {
     input.value = "";
     cargarTemasExistentes();
     cargarTemasMover();
+    cargarSelectEliminar();
+    cargarSelectRenombrar();
   } catch (err) {
     console.error(err);
     alert("Error al crear el tema");
