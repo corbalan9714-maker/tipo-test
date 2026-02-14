@@ -95,6 +95,7 @@ function initEditor() {
         if (subtemaVista) {
           subtemaVista.addEventListener("change", mostrarPreguntas);
         }
+        cargarTemasMover();
       });
   } else {
     banco = cargarBanco();
@@ -120,6 +121,7 @@ function initEditor() {
     if (subtemaVista) {
       subtemaVista.addEventListener("change", mostrarPreguntas);
     }
+    cargarTemasMover();
   }
   prepararValidacionFormulario();
   const buscador = document.getElementById("buscadorPreguntas");
