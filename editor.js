@@ -476,10 +476,27 @@ function cargarParaEditar(tema, index) {
   if (btnGuardar) btnGuardar.textContent = "Guardar cambios";
 }
 
-function borrarPregunta(tema, index) {
+async function borrarPregunta(tema, index) {
   if (!confirm("¿Seguro que quieres borrar esta pregunta?")) return;
 
   const pregunta = banco[tema][index];
+
+  // Enviar pregunta a la papelera antes de borrarla
+  try {
+    if (window.db && window.addDoc && window.collection) {
+      await window.addDoc(
+        window.collection(window.db, "Papelera"),
+        {
+          tipo: "pregunta",
+          nombre: pregunta.pregunta || "Pregunta",
+          fecha: Date.now(),
+          datos: pregunta
+        }
+      );
+    }
+  } catch (err) {
+    console.error("Error enviando pregunta a papelera:", err);
+  }
 
   // Borrar en Firebase si tiene id
   if (pregunta && pregunta.id && window.eliminarPreguntaFirebase) {
@@ -687,10 +704,9 @@ async function cargarSelectEliminar() {
     console.error("Error cargando temas para eliminar:", err);
   }
 
-  // Fallback a banco local si Firebase no devuelve temas
-  if (temas.length === 0) {
-    temas = Object.keys(banco || {});
-  }
+  // Mezclar temas de Firebase y banco local
+  const temasLocal = Object.keys(banco || {});
+  temas = Array.from(new Set([...temas, ...temasLocal]));
 
   ordenarNatural(temas).forEach(tema => {
     if (tema === "__falladas__") return;
@@ -1780,9 +1796,14 @@ async function cargarPapelera() {
       const btn = document.createElement("button");
       btn.textContent = "Restaurar";
       btn.style.marginLeft = "8px";
-      btn.onclick = () => restaurarTema(docSnap.id, data);
 
-      div.textContent = data.nombre;
+      if (data.tipo === "pregunta") {
+        btn.onclick = () => restaurarPregunta(docSnap.id, data);
+        div.textContent = "Pregunta: " + (data.nombre || "(sin texto)");
+      } else {
+        btn.onclick = () => restaurarTema(docSnap.id, data);
+        div.textContent = data.nombre;
+      }
       div.appendChild(btn);
       cont.appendChild(div);
     }
@@ -1837,6 +1858,29 @@ async function restaurarTema(docId, data) {
   } catch (err) {
     console.error(err);
     alert("Error al restaurar el tema");
+  }
+}
+
+// ====== RESTAURAR PREGUNTA DESDE PAPELERA ======
+async function restaurarPregunta(docId, data) {
+  if (!confirm("¿Restaurar esta pregunta?")) return;
+
+  try {
+    const pregunta = data.datos;
+
+    if (window.guardarPreguntaFirebase) {
+      await window.guardarPreguntaFirebase(pregunta);
+    }
+
+    await window.deleteDoc(
+      window.doc(window.db, "Papelera", docId)
+    );
+
+    alert("Pregunta restaurada correctamente");
+    cargarPapelera();
+  } catch (err) {
+    console.error(err);
+    alert("Error al restaurar la pregunta");
   }
 }
 
