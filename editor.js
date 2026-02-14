@@ -1170,27 +1170,34 @@ function cargarSubtemasVista() {
   selectSubtema.onchange = mostrarPreguntas;
 }
 // ====== MOVER PREGUNTA ENTRE TEMAS / SUBTEMAS ======
-function cargarTemasMover() {
+async function cargarTemasMover() {
   const selectTema = document.getElementById("temaMover");
   const selectNuevoTema = document.getElementById("nuevoTemaMover");
-  if (!selectTema || !selectNuevoTema) return;
+  if (!selectTema || !selectNuevoTema || !window.db) return;
 
   selectTema.innerHTML = "<option value=''>-- seleccionar tema --</option>";
   selectNuevoTema.innerHTML = "<option value=''>-- seleccionar tema destino --</option>";
 
-  ordenarNatural(Object.keys(banco)).forEach(tema => {
-    if (tema === "__falladas__") return;
+  try {
+    const snapshot = await db.collection("Temas").get();
 
-    const opt1 = document.createElement("option");
-    opt1.value = tema;
-    opt1.textContent = tema;
-    selectTema.appendChild(opt1);
+    snapshot.forEach(doc => {
+      const data = doc.data();
 
-    const opt2 = document.createElement("option");
-    opt2.value = tema;
-    opt2.textContent = tema;
-    selectNuevoTema.appendChild(opt2);
-  });
+      const opt1 = document.createElement("option");
+      opt1.value = data.nombre;
+      opt1.textContent = data.nombre;
+      selectTema.appendChild(opt1);
+
+      const opt2 = document.createElement("option");
+      opt2.value = data.nombre;
+      opt2.textContent = data.nombre;
+      selectNuevoTema.appendChild(opt2);
+    });
+
+  } catch (err) {
+    console.error("Error cargando temas para mover:", err);
+  }
 }
 
 function cargarSubtemasMover() {
