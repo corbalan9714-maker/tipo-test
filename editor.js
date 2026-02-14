@@ -59,83 +59,51 @@ function formatearNegrita(texto) {
 /* ====== INICIALIZACIÓN ====== */
 document.addEventListener("DOMContentLoaded", initEditor);
 
-function initEditor() {
-  // Cargar banco con soporte offline
-  if (window.cargarDesdeFirebase) {
-    window.cargarDesdeFirebase()
-      .then(bancoFirebase => {
+async function initEditor() {
+  try {
+    // Intentar cargar desde Firebase
+    if (window.cargarDesdeFirebase) {
+      const bancoFirebase = await window.cargarDesdeFirebase();
+      if (bancoFirebase) {
         banco = bancoFirebase;
-        // Guardar copia local para modo offline
         localStorage.setItem(STORAGE_KEY, JSON.stringify(banco));
-      })
-      .catch(() => {
-        console.log("Sin conexión, usando copia local (editor)");
-        banco = cargarBanco();
-      })
-      .finally(() => {
-        limpiarTemasVacios();
-        actualizarOpciones();
-        cargarTemasVista();
-        cargarTemasExistentes();
-        cargarTemasParaSubtema();
-        cargarSelectEliminar();
-        cargarSelectRenombrar();
-        cargarTemasRenombrarSubtema();
-        validarRenombradoSubtema();
-        // === NUEVO BLOQUE AGREGADO ===
-        const temaVista = document.getElementById("temaVista");
-        const subtemaVista = document.getElementById("subtemaVista");
-
-        if (temaVista) {
-          temaVista.addEventListener("change", () => {
-            cargarSubtemasVista();
-            mostrarPreguntas();
-          });
-        }
-
-        if (subtemaVista) {
-          subtemaVista.addEventListener("change", mostrarPreguntas);
-        }
-        cargarTemasMover();
-        // Segundo intento tras inicialización de Firebase
-        setTimeout(() => {
-          cargarTemasExistentes();
-          cargarTemasMover();
-        }, 300);
-      });
-  } else {
+      }
+    } else {
+      banco = cargarBanco();
+    }
+  } catch (e) {
+    console.log("Sin conexión, usando copia local (editor)");
     banco = cargarBanco();
-    limpiarTemasVacios();
-    actualizarOpciones();
-    cargarTemasVista();
-    cargarTemasExistentes();
-    cargarTemasParaSubtema();
-    cargarSelectEliminar();
-    cargarSelectRenombrar();
-    cargarTemasRenombrarSubtema();
-    validarRenombradoSubtema();
-    // === NUEVO BLOQUE AGREGADO ===
-    const temaVista = document.getElementById("temaVista");
-    const subtemaVista = document.getElementById("subtemaVista");
-
-    if (temaVista) {
-      temaVista.addEventListener("change", () => {
-        cargarSubtemasVista();
-        mostrarPreguntas();
-      });
-    }
-
-    if (subtemaVista) {
-      subtemaVista.addEventListener("change", mostrarPreguntas);
-    }
-    cargarTemasMover();
-    // Segundo intento tras inicialización de Firebase
-    setTimeout(() => {
-      cargarTemasExistentes();
-      cargarTemasMover();
-    }, 300);
   }
+
+  // Inicialización de selectores y vistas
+  limpiarTemasVacios();
+  actualizarOpciones();
+  cargarTemasVista();
+  cargarTemasExistentes();
+  cargarTemasParaSubtema();
+  cargarSelectEliminar();
+  cargarSelectRenombrar();
+  cargarTemasRenombrarSubtema();
+  validarRenombradoSubtema();
+  cargarTemasMover();
+
+  const temaVista = document.getElementById("temaVista");
+  const subtemaVista = document.getElementById("subtemaVista");
+
+  if (temaVista) {
+    temaVista.addEventListener("change", () => {
+      cargarSubtemasVista();
+      mostrarPreguntas();
+    });
+  }
+
+  if (subtemaVista) {
+    subtemaVista.addEventListener("change", mostrarPreguntas);
+  }
+
   prepararValidacionFormulario();
+
   const buscador = document.getElementById("buscadorPreguntas");
   if (buscador) {
     buscador.addEventListener("input", (e) => {
@@ -143,74 +111,13 @@ function initEditor() {
       mostrarPreguntas();
     });
   }
+
   validarFormulario();
   prepararValidacionBorrado();
   validarBorradoTema();
+
   document.getElementById("temaExistente")?.addEventListener("change", controlarInputTema);
   document.getElementById("temaExistente")?.addEventListener("change", cargarSubtemasPorTema);
-
-  // ===== EXPORTAR / IMPORTAR BANCO =====
-  const btnExportar = document.getElementById("btnExportarBanco");
-  const btnImportar = document.getElementById("btnImportarBanco");
-  const inputImportar = document.getElementById("inputImportarBanco");
-
-  // EXPORTAR
-  if (btnExportar) {
-    btnExportar.onclick = async () => {
-      try {
-        const banco = await window.cargarDesdeFirebase();
-        const dataStr = JSON.stringify(banco, null, 2);
-
-        const blob = new Blob([dataStr], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "banco-preguntas.json";
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-
-        URL.revokeObjectURL(url);
-      } catch (err) {
-        console.error(err);
-        alert("Error al exportar el banco");
-      }
-    };
-  }
-
-  // IMPORTAR
-  if (btnImportar && inputImportar) {
-    btnImportar.onclick = () => inputImportar.click();
-
-    inputImportar.onchange = async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const text = await file.text();
-      const bancoImportado = JSON.parse(text);
-
-      if (!confirm("Esto añadirá las preguntas al banco actual. ¿Continuar?")) {
-        return;
-      }
-
-      for (const tema in bancoImportado) {
-        for (const pregunta of bancoImportado[tema]) {
-          await window.guardarEnFirebase({
-            tema: tema,
-            pregunta: pregunta.pregunta,
-            opciones: pregunta.opciones,
-            correcta: pregunta.correcta,
-            feedback: pregunta.feedback || "",
-            fecha: Date.now()
-          });
-        }
-      }
-
-      alert("Banco importado correctamente.");
-      location.reload();
-    };
-  }
 }
 
 /* ====== CREAR / EDITAR PREGUNTA ====== */
