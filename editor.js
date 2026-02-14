@@ -7,10 +7,12 @@ function cargarBanco() {
 
 function guardarBanco() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(banco));
+  window.banco = banco;
 }
 
 
 let banco = cargarBanco();
+window.banco = banco;
 let editando = null;
 let textoBusqueda = "";
 let contadorResultados = 0;
