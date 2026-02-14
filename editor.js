@@ -1555,6 +1555,10 @@ async function crearSubtemaVacio() {
     cargarSelectEliminar();
     cargarSelectRenombrar();
     cargarTemasParaSubtema();
+    cargarSubtemasVista();
+    cargarSubtemasMover();
+    cargarSubtemasEliminar();
+    cargarSubtemasRenombrar();
 
   } catch (err) {
     console.error(err);
