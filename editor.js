@@ -1079,10 +1079,9 @@ async function cargarSelectRenombrar() {
     console.error("Error cargando temas para renombrar:", err);
   }
 
-  // Fallback a banco local si Firebase no devuelve temas
-  if (temas.length === 0) {
-    temas = Object.keys(banco || {});
-  }
+  // Mezclar temas de Firebase y banco local
+  const temasLocal = Object.keys(banco || {});
+  temas = Array.from(new Set([...temas, ...temasLocal]));
 
   ordenarNatural(temas).forEach(tema => {
     if (tema === "__falladas__") return;
@@ -1409,10 +1408,9 @@ async function cargarTemasMover() {
     console.error("Error cargando temas para mover:", err);
   }
 
-  // Fallback a banco local si Firebase no devuelve temas
-  if (temas.length === 0) {
-    temas = Object.keys(banco || {});
-  }
+  // Mezclar temas de Firebase y banco local
+  const temasLocal = Object.keys(banco || {});
+  temas = Array.from(new Set([...temas, ...temasLocal]));
 
   temas.forEach(nombre => {
     const opt1 = document.createElement("option");
@@ -2016,10 +2014,9 @@ async function cargarTemasParaSubtema() {
     console.error("Error cargando temas para subtema vacío:", err);
   }
 
-  // Fallback al banco local
-  if (temas.length === 0) {
-    temas = Object.keys(banco || {});
-  }
+  // Mezclar temas de Firebase y banco local
+  const temasLocal = Object.keys(banco || {});
+  temas = Array.from(new Set([...temas, ...temasLocal]));
 
   ordenarNatural(temas).forEach(tema => {
     const opt = document.createElement("option");
