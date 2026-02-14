@@ -551,8 +551,8 @@ async function cargarTemasExistentes() {
       });
     }
 
-    // Fallback a banco local si no hay datos de Firebase
-    if (temas.length === 0) {
+    // Si Firebase no devuelve temas, usar banco local como respaldo
+    if (!temas || temas.length === 0) {
       temas = Object.keys(banco || {});
     }
 
