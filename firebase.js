@@ -21,14 +21,18 @@ window.getDocs = getDocs;
 window.deleteDoc = deleteDoc;
 window.addDoc = addDoc;
 const auth = getAuth(app);
+window.auth = auth;
 
-setPersistence(auth, browserLocalPersistence)
-  .then(() => {
+async function inicializarAuth() {
+  try {
+    await setPersistence(auth, browserLocalPersistence);
     console.log("Persistencia de sesión activada");
-  })
-  .catch((error) => {
+  } catch (error) {
     console.error("Error en persistencia:", error);
-  });
+  }
+}
+
+inicializarAuth();
 
 let usuarioActual = null;
 

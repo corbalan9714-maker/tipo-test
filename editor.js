@@ -62,41 +62,11 @@ function formatearNegrita(texto) {
 document.addEventListener("DOMContentLoaded", initEditor);
 
 async function initEditor() {
-  try {
-    // Intentar cargar desde Firebase
-    if (window.cargarDesdeFirebase) {
-      const bancoFirebase = await window.cargarDesdeFirebase();
+  // 1. Cargar siempre desde localStorage (offline-first)
+  banco = cargarBanco();
+  window.banco = banco;
 
-      if (bancoFirebase) {
-        banco = bancoFirebase;
-        window.banco = banco;
-
-        // Asegurar que todos los temas de Firebase existan en el banco local
-        if (window.db && window.getDocs && window.collection) {
-          const snap = await window.getDocs(
-            window.collection(window.db, "Temas")
-          );
-
-          snap.forEach(doc => {
-            const data = doc.data();
-            if (data && data.nombre && !banco[data.nombre]) {
-              banco[data.nombre] = [];
-            }
-          });
-        }
-
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(banco));
-      }
-    } else {
-      banco = cargarBanco();
-    }
-  } catch (e) {
-    console.log("Sin conexión, usando copia local (editor)");
-    banco = cargarBanco();
-    window.banco = banco;
-  }
-
-  // Inicialización de selectores y vistas
+  // Inicializar interfaz inmediatamente
   limpiarTemasVacios();
   actualizarOpciones();
   cargarTemasVista();
@@ -138,6 +108,31 @@ async function initEditor() {
 
   document.getElementById("temaExistente")?.addEventListener("change", controlarInputTema);
   document.getElementById("temaExistente")?.addEventListener("change", cargarSubtemasPorTema);
+
+  // 2. Sincronizar con Firebase en segundo plano
+  try {
+    if (window.cargarDesdeFirebase) {
+      const bancoFirebase = await window.cargarDesdeFirebase();
+      if (bancoFirebase && Object.keys(bancoFirebase).length) {
+        banco = bancoFirebase;
+        window.banco = banco;
+        guardarBanco();
+
+        // refrescar interfaz tras sincronización
+        limpiarTemasVacios();
+        actualizarOpciones();
+        cargarTemasVista();
+        cargarTemasExistentes();
+        cargarTemasParaSubtema();
+        cargarSelectEliminar();
+        cargarSelectRenombrar();
+        cargarTemasRenombrarSubtema();
+        cargarTemasMover();
+      }
+    }
+  } catch (e) {
+    console.log("Sin conexión, trabajando en modo offline");
+  }
 }
 
 /* ====== CREAR / EDITAR PREGUNTA ====== */
