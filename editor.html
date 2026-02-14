@@ -222,7 +222,6 @@ body {
 <div class="header-card">
   <h1>Editor de preguntas</h1>
 </div>
-<div style="height:1px; background:var(--border-main); margin:16px 0 24px 0; opacity:0.4;"></div>
 <details>
 <summary style="font-size:18px; font-weight:600; margin:16px 0;">Añadir preguntas</summary>
 <div>
@@ -363,7 +362,26 @@ body {
 
 </div>
 </details>
-<hr style="margin:20px 0;">
+
+<hr>
+
+<details>
+<summary style="font-size:18px; font-weight:600; margin:16px 0;">Papelera</summary>
+<div>
+<h2>Temas en la papelera</h2>
+<p style="opacity:0.7; font-size:14px; margin-bottom:12px;">
+Aquí puedes restaurar temas eliminados junto con sus subtemas y preguntas.
+</p>
+
+<button type="button" onclick="cargarPapelera()" style="background:rgba(0,0,0,0.08); color:var(--text-main); box-shadow:none;">
+  Actualizar lista
+</button>
+
+<div id="listaPapelera" style="margin-top:12px;"></div>
+</div>
+</details>
+
+<hr>
 
 <details>
 <summary style="font-size:18px; font-weight:600; margin:16px 0;">Renombrar temas</summary>

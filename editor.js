@@ -1735,6 +1735,95 @@ async function enviarTemaAPapelera() {
 
 // Exponer al HTML
 window.enviarTemaAPapelera = enviarTemaAPapelera;
+
+// ====== RESTAURAR DESDE PAPELERA ======
+async function cargarPapelera() {
+  const cont = document.getElementById("listaPapelera");
+  if (!cont) return;
+
+  cont.innerHTML = "Cargando…";
+
+  try {
+    const snap = await window.getDocs(
+      window.collection(window.db, "Papelera")
+    );
+
+    cont.innerHTML = "";
+
+    if (snap.empty) {
+      cont.textContent = "La papelera está vacía";
+      return;
+    }
+
+    snap.forEach(docSnap => {
+      const data = docSnap.data();
+      const div = document.createElement("div");
+      div.style.margin = "8px 0";
+
+      const btn = document.createElement("button");
+      btn.textContent = "Restaurar";
+      btn.style.marginLeft = "8px";
+      btn.onclick = () => restaurarTema(docSnap.id, data);
+
+      div.textContent = data.nombre;
+      div.appendChild(btn);
+      cont.appendChild(div);
+    });
+  } catch (err) {
+    console.error(err);
+    cont.textContent = "Error cargando papelera";
+  }
+}
+
+async function restaurarTema(docId, data) {
+  if (!confirm(`Restaurar el tema "${data.nombre}"?`)) return;
+
+  const { tema, subtemas, preguntas } = data.datos;
+
+  try {
+    // Restaurar tema
+    const idTema = tema.replaceAll("/", "_");
+    await window.setDoc(
+      window.doc(window.db, "Temas", idTema),
+      { nombre: tema }
+    );
+
+    // Restaurar subtemas
+    for (const st of subtemas) {
+      const id =
+        st.temaId.replaceAll("/", "_") +
+        "__" +
+        st.nombre.replaceAll("/", "_");
+
+      await window.setDoc(
+        window.doc(window.db, "Subtemas", id),
+        st
+      );
+    }
+
+    // Restaurar preguntas
+    for (const p of preguntas) {
+      if (window.guardarPreguntaFirebase) {
+        await window.guardarPreguntaFirebase(p);
+      }
+    }
+
+    // Borrar de papelera
+    await window.deleteDoc(
+      window.doc(window.db, "Papelera", docId)
+    );
+
+    alert("Tema restaurado correctamente");
+
+    if (typeof cargarPapelera === "function") cargarPapelera();
+    if (typeof cargarTemasExistentes === "function") cargarTemasExistentes();
+  } catch (err) {
+    console.error(err);
+    alert("Error al restaurar el tema");
+  }
+}
+
+window.cargarPapelera = cargarPapelera;
 // ====== CREAR SUBTEMA VACÍO ======
 async function crearSubtemaVacio() {
   const temaSelect = document.getElementById("temaParaSubtema");
