@@ -64,8 +64,24 @@ async function initEditor() {
     // Intentar cargar desde Firebase
     if (window.cargarDesdeFirebase) {
       const bancoFirebase = await window.cargarDesdeFirebase();
+
       if (bancoFirebase) {
         banco = bancoFirebase;
+
+        // Asegurar que todos los temas de Firebase existan en el banco local
+        if (window.db && window.getDocs && window.collection) {
+          const snap = await window.getDocs(
+            window.collection(window.db, "Temas")
+          );
+
+          snap.forEach(doc => {
+            const data = doc.data();
+            if (data && data.nombre && !banco[data.nombre]) {
+              banco[data.nombre] = [];
+            }
+          });
+        }
+
         localStorage.setItem(STORAGE_KEY, JSON.stringify(banco));
       }
     } else {
