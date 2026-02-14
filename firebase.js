@@ -24,6 +24,7 @@ const auth = getAuth(app);
 window.auth = auth;
 
 let usuarioActual = null;
+window.usuarioActual = null;
 window.authReady = false;
 
 async function inicializarAuth() {
@@ -32,10 +33,10 @@ async function inicializarAuth() {
     console.log("Persistencia de sesión activada");
 
     onAuthStateChanged(auth, (user) => {
-      usuarioActual = user;
-      window.usuarioActual = user;
+      usuarioActual = user || null;
+      window.usuarioActual = usuarioActual;
       window.authReady = true;
-      console.log("Estado de auth listo:", user);
+      console.log("Estado de auth listo:", usuarioActual);
     });
 
   } catch (error) {
