@@ -96,6 +96,11 @@ function initEditor() {
           subtemaVista.addEventListener("change", mostrarPreguntas);
         }
         cargarTemasMover();
+        // Segundo intento tras inicialización de Firebase
+        setTimeout(() => {
+          cargarTemasExistentes();
+          cargarTemasMover();
+        }, 300);
       });
   } else {
     banco = cargarBanco();
@@ -122,6 +127,11 @@ function initEditor() {
       subtemaVista.addEventListener("change", mostrarPreguntas);
     }
     cargarTemasMover();
+    // Segundo intento tras inicialización de Firebase
+    setTimeout(() => {
+      cargarTemasExistentes();
+      cargarTemasMover();
+    }, 300);
   }
   prepararValidacionFormulario();
   const buscador = document.getElementById("buscadorPreguntas");
