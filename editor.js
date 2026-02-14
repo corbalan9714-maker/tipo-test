@@ -761,7 +761,7 @@ async function cargarSubtemasEliminar() {
 }
 
 // ====== ELIMINAR SUBTEMA ======
-function borrarSubtema() {
+async function borrarSubtema() {
   const temaSelect = document.getElementById("temaEliminar");
   const subtemaSelect = document.getElementById("subtemaEliminar");
 
@@ -809,6 +809,22 @@ function borrarSubtema() {
 
   guardarBanco();
   if (window.crearBackupAutomatico) window.crearBackupAutomatico(banco);
+
+  // Eliminar subtema en Firestore
+  try {
+    if (window.db && window.doc && window.deleteDoc) {
+      const id =
+        tema.replaceAll("/", "_") +
+        "__" +
+        subtema.replaceAll("/", "_");
+
+      await window.deleteDoc(
+        window.doc(window.db, "Subtemas", id)
+      );
+    }
+  } catch (err) {
+    console.error("Error eliminando subtema en Firebase:", err);
+  }
 
   limpiarTemasVacios();
   cargarTemasVista();
