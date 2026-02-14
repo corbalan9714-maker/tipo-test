@@ -186,3 +186,50 @@ window.cargarProgresoRemoto = async function () {
     return null;
   }
 };
+
+// ===== MIGRACIÓN DE TEMAS Y SUBTEMAS (EJECUTAR UNA VEZ) =====
+async function migrarEstructuraReal() {
+  try {
+    const snapshot = await getDocs(collection(db, "preguntas"));
+
+    const temas = {};
+    const subtemas = {};
+
+    snapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      const tema = data.tema || "General";
+      const subtema = data.subtema || "General";
+
+      temas[tema] = true;
+      subtemas[tema + "||" + subtema] = { tema, subtema };
+    });
+
+    // Crear temas
+    for (const tema in temas) {
+      await setDoc(doc(db, "Temas", tema), {
+        nombre: tema
+      });
+      console.log("Tema creado:", tema);
+    }
+
+    // Crear subtemas
+    for (const key in subtemas) {
+      const { tema, subtema } = subtemas[key];
+      const id = tema + "__" + subtema;
+
+      await setDoc(doc(db, "Subtemas", id), {
+        nombre: subtema,
+        temaId: tema
+      });
+
+      console.log("Subtema creado:", subtema, "→", tema);
+    }
+
+    console.log("Migración completada.");
+  } catch (err) {
+    console.error("Error en migración:", err);
+  }
+}
+
+// Exponer a la consola para ejecutarla manualmente
+window.migrarEstructuraReal = migrarEstructuraReal;
