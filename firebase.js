@@ -206,9 +206,12 @@ async function migrarEstructuraReal() {
 
     // Crear temas
     for (const tema in temas) {
-      await setDoc(doc(db, "Temas", tema), {
+      const safeTema = tema.replaceAll("/", "_");
+
+      await setDoc(doc(db, "Temas", safeTema), {
         nombre: tema
       });
+
       console.log("Tema creado:", tema);
     }
 
