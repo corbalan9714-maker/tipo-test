@@ -784,26 +784,14 @@ async function borrarSubtema() {
     return;
   }
 
-  const preguntas = banco[tema] || [];
+  // Asegurar estructura
+  if (!banco[tema]) banco[tema] = [];
 
-  // Filtrar preguntas que no sean del subtema a borrar
-  const restantes = [];
+  // Borrar preguntas del subtema en local
+  banco[tema] = banco[tema].filter(p => (p.subtema || "General") !== subtema);
 
-  preguntas.forEach(p => {
-    const st = p.subtema || "General";
-    if (st === subtema) {
-      // Borrar en Firebase si tiene id
-      if (p.id && window.eliminarPreguntaFirebase) {
-        window.eliminarPreguntaFirebase(p.id);
-      }
-    } else {
-      restantes.push(p);
-    }
-  });
-
-  if (restantes.length > 0) {
-    banco[tema] = restantes;
-  } else {
+  // Si el tema queda vacío, eliminarlo
+  if (banco[tema].length === 0) {
     delete banco[tema];
   }
 
@@ -830,6 +818,7 @@ async function borrarSubtema() {
   cargarTemasVista();
   cargarTemasExistentes();
   cargarSelectEliminar();
+  cargarSubtemasEliminar();
 
   alert(`Subtema "${subtema}" eliminado correctamente`);
 }
