@@ -1744,10 +1744,13 @@ async function cargarPapelera() {
   cont.innerHTML = "Cargando…";
 
   try {
-    if (!window.db || !window.getDocs || !window.collection) {
+    if (!window.db || !window.getDocs || !window.collection || !window.deleteDoc || !window.doc) {
       cont.textContent = "Firebase no está disponible";
       return;
     }
+
+    const ahora = Date.now();
+    const sieteDias = 7 * 24 * 60 * 60 * 1000;
 
     const snap = await window.getDocs(
       window.collection(window.db, "Papelera")
@@ -1760,8 +1763,17 @@ async function cargarPapelera() {
       return;
     }
 
-    snap.forEach(docSnap => {
+    for (const docSnap of snap.docs) {
       const data = docSnap.data();
+
+      // Si tiene fecha y han pasado más de 7 días, eliminar automáticamente
+      if (data.fecha && ahora - data.fecha > sieteDias) {
+        await window.deleteDoc(
+          window.doc(window.db, "Papelera", docSnap.id)
+        );
+        continue;
+      }
+
       const div = document.createElement("div");
       div.style.margin = "8px 0";
 
@@ -1773,7 +1785,7 @@ async function cargarPapelera() {
       div.textContent = data.nombre;
       div.appendChild(btn);
       cont.appendChild(div);
-    });
+    }
   } catch (err) {
     console.error(err);
     cont.textContent = "Error cargando papelera";
