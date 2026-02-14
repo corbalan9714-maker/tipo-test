@@ -1597,6 +1597,77 @@ async function eliminarTemaFirestore() {
 
 window.crearTemaVacio = crearTemaVacio;
 window.eliminarTemaFirestore = eliminarTemaFirestore;
+
+// ====== BORRAR TEMA COMPLETO (incluyendo subtemas y preguntas) ======
+async function borrarTemaCompleto() {
+  const select = document.getElementById("temaEliminar");
+  if (!select) return;
+
+  const tema = select.value;
+  if (!tema) {
+    alert("Selecciona un tema primero");
+    return;
+  }
+
+  if (!confirm(`Se eliminará el tema "${tema}" junto con todos sus subtemas y preguntas. ¿Continuar?`)) {
+    return;
+  }
+
+  // 1. Borrar preguntas del banco local
+  const preguntas = banco[tema] || [];
+  preguntas.forEach(p => {
+    if (p.id && window.eliminarPreguntaFirebase) {
+      window.eliminarPreguntaFirebase(p.id);
+    }
+  });
+
+  delete banco[tema];
+  guardarBanco();
+  if (window.crearBackupAutomatico) window.crearBackupAutomatico(banco);
+
+  // 2. Borrar subtemas en Firestore
+  try {
+    if (window.db && window.getDocs && window.collection && window.deleteDoc) {
+      const snap = await window.getDocs(
+        window.collection(window.db, "Subtemas")
+      );
+
+      const promesas = [];
+      snap.forEach(docSnap => {
+        const data = docSnap.data();
+        if (data && data.temaId === tema) {
+          promesas.push(window.deleteDoc(docSnap.ref));
+        }
+      });
+
+      await Promise.all(promesas);
+    }
+  } catch (err) {
+    console.error("Error eliminando subtemas:", err);
+  }
+
+  // 3. Borrar tema en Firestore
+  try {
+    if (window.db && window.doc && window.deleteDoc) {
+      const idTema = tema.replaceAll("/", "_");
+      await window.deleteDoc(
+        window.doc(window.db, "Temas", idTema)
+      );
+    }
+  } catch (err) {
+    console.error("Error eliminando tema:", err);
+  }
+
+  // 4. Refrescar selectores
+  cargarTemasVista();
+  cargarTemasExistentes();
+  cargarSelectEliminar();
+
+  alert(`Tema "${tema}" eliminado completamente`);
+}
+
+// Exponer al HTML
+window.borrarTemaCompleto = borrarTemaCompleto;
 // ====== CREAR SUBTEMA VACÍO ======
 async function crearSubtemaVacio() {
   const temaSelect = document.getElementById("temaParaSubtema");
