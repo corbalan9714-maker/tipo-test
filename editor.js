@@ -1418,7 +1418,8 @@ async function crearTemaVacio() {
     return;
   }
 
-  if (!window.db || !window.setDoc || !window.doc) {
+  // Solo comprobar db real
+  if (!window.db) {
     alert("Firebase no está disponible");
     return;
   }
@@ -1426,6 +1427,7 @@ async function crearTemaVacio() {
   try {
     const id = nombre.replaceAll("/", "_");
 
+    // Usar API modular directamente
     await window.setDoc(
       window.doc(window.db, "Temas", id),
       { nombre: nombre }
