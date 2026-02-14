@@ -1505,3 +1505,58 @@ async function eliminarTemaFirestore() {
 
 window.crearTemaVacio = crearTemaVacio;
 window.eliminarTemaFirestore = eliminarTemaFirestore;
+// ====== CREAR SUBTEMA VACÍO ======
+async function crearSubtemaVacio() {
+  const temaSelect = document.getElementById("temaExistente");
+  const input = document.getElementById("nuevoSubtemaVacio");
+
+  if (!temaSelect || !input) return;
+
+  const tema = temaSelect.value;
+  const nombre = input.value.trim();
+
+  if (!tema) {
+    alert("Selecciona un tema");
+    return;
+  }
+
+  if (!nombre) {
+    alert("Escribe el nombre del subtema");
+    return;
+  }
+
+  if (!window.db) {
+    alert("Firebase no está disponible");
+    return;
+  }
+
+  try {
+    const id =
+      tema.replaceAll("/", "_") +
+      "__" +
+      nombre.replaceAll("/", "_");
+
+    await window.setDoc(
+      window.doc(window.db, "Subtemas", id),
+      {
+        nombre: nombre,
+        temaId: tema
+      }
+    );
+
+    alert("Subtema creado correctamente");
+    input.value = "";
+
+    // refrescar selectores
+    cargarTemasExistentes();
+    cargarTemasMover();
+    cargarSelectEliminar();
+    cargarSelectRenombrar();
+
+  } catch (err) {
+    console.error(err);
+    alert("Error al crear el subtema");
+  }
+}
+
+window.crearSubtemaVacio = crearSubtemaVacio;
