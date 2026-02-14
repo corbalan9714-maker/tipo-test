@@ -1418,24 +1418,17 @@ async function crearTemaVacio() {
     return;
   }
 
+  if (!window.db || !window.db.collection) {
+    alert("Firebase no está disponible");
+    return;
+  }
+
   try {
-    // Soporte para SDK modular
-    if (window.db && window.setDoc && window.doc) {
-      const id = nombre.replaceAll("/", "_");
-      await window.setDoc(window.doc(window.db, "Temas", id), {
-        nombre: nombre
-      });
-    }
-    // Soporte para sintaxis antigua
-    else if (window.db && window.db.collection) {
-      const id = nombre.replaceAll("/", "_");
-      await window.db.collection("Temas").doc(id).set({
-        nombre: nombre
-      });
-    } else {
-      alert("Firebase no está disponible");
-      return;
-    }
+    const id = nombre.replaceAll("/", "_");
+
+    await window.db.collection("Temas").doc(id).set({
+      nombre: nombre
+    });
 
     alert("Tema creado correctamente");
     input.value = "";
