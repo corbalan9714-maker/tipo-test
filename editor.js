@@ -587,6 +587,8 @@ async function cargarTemasExistentes() {
 
     if (selectTema) selectTema.innerHTML = "";
 
+    // Eliminar duplicados
+    temas = Array.from(new Set(temas));
     temas.forEach(nombre => {
       if (selectExistente) {
         const opt1 = document.createElement("option");
