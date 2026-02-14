@@ -568,8 +568,10 @@ async function cargarTemasExistentes() {
   try {
     let temas = [];
 
-    if (window.db && window.db.collection) {
-      const snapshot = await window.db.collection("Temas").get();
+    if (window.db && window.getDocs && window.collection) {
+      const snapshot = await window.getDocs(
+        window.collection(window.db, "Temas")
+      );
       snapshot.forEach(doc => {
         const data = doc.data();
         if (data && data.nombre) temas.push(data.nombre);
