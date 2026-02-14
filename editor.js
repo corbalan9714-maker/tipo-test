@@ -568,7 +568,7 @@ async function cargarTemasExistentes() {
   }
 
   try {
-    const snapshot = await dbRef.collection("Temas").get();
+    const snapshot = await getDocs(collection(dbRef, "Temas"));
 
     if (selectTema) {
       selectTema.innerHTML = "";
@@ -1212,7 +1212,7 @@ async function cargarTemasMover() {
   selectNuevoTema.innerHTML = "<option value=''>-- seleccionar tema destino --</option>";
 
   try {
-    const snapshot = await dbRef.collection("Temas").get();
+    const snapshot = await getDocs(collection(dbRef, "Temas"));
 
     snapshot.forEach(doc => {
       const data = doc.data();
