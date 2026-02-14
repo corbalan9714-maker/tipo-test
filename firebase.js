@@ -224,7 +224,7 @@ async function migrarEstructuraReal() {
 
       await setDoc(doc(db, "Subtemas", id), {
         nombre: subtema,
-        temaId: tema
+        temaId: safeTema
       });
 
       console.log("Subtema creado:", subtema, "→", tema);
