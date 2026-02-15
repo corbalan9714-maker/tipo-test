@@ -427,7 +427,7 @@ function crearBloquePregunta(p, i) {
   div.innerHTML = `
     <strong>${i + 1}. ${p.pregunta}</strong>
     <label style="margin-left:10px; font-size:12px;">
-      <input type="checkbox" class="marcar-pregunta" data-index="${i}" onchange="toggleMarcaPregunta(${i})">
+      <input type="checkbox" class="marcar-pregunta" data-index="${i}" onchange="toggleMarcaPregunta(${i})" ${p.marcada ? "checked" : ""}>
       🔖 Marcar
     </label>
     <br>
@@ -1875,8 +1875,10 @@ function toggleMarcaPregunta(index) {
   if (!check) return;
 
   if (check.checked) {
+    p.marcada = true;
     marcarPreguntaRemoto(p.id);
   } else {
+    p.marcada = false;
     desmarcarPreguntaRemoto(p.id);
   }
 }
