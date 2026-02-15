@@ -180,6 +180,37 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   initTest();
 
+  // ===== CARGAR PREGUNTAS MARCADAS DEL USUARIO =====
+  try {
+    if (window.usuarioActual && window.db) {
+      const uid = window.usuarioActual.uid;
+      const snap = await getDocs(
+        collection(window.db, "usuarios", uid, "marcadas")
+      );
+
+      const idsMarcadas = new Set();
+      snap.forEach(doc => {
+        idsMarcadas.add(doc.id);
+      });
+
+      // Marcar en el banco local
+      Object.keys(banco).forEach(tema => {
+        if (!Array.isArray(banco[tema])) return;
+        banco[tema].forEach(p => {
+          if (p.id && idsMarcadas.has(p.id)) {
+            p.marcada = true;
+          } else {
+            p.marcada = false;
+          }
+        });
+      });
+
+      console.log("Marcadas cargadas:", idsMarcadas.size);
+    }
+  } catch (e) {
+    console.warn("No se pudieron cargar las preguntas marcadas:", e);
+  }
+
   // Reanudar test si hay progreso guardado
   try {
     const progreso = JSON.parse(localStorage.getItem("progresoTest") || "null");
@@ -396,7 +427,7 @@ function crearBloquePregunta(p, i) {
   div.innerHTML = `
     <strong>${i + 1}. ${p.pregunta}</strong>
     <label style="margin-left:10px; font-size:12px;">
-      <input type="checkbox" class="marcar-pregunta" data-index="${i}">
+      <input type="checkbox" class="marcar-pregunta" data-index="${i}" onchange="toggleMarcaPregunta(${i})">
       🔖 Marcar
     </label>
     <br>
@@ -469,69 +500,99 @@ function pintarCheckboxesTemas() {
 
     bloqueTema.appendChild(label);
 
-    // === Subtemas colapsables ===
-    if (tema !== "__falladas__" && Array.isArray(banco[tema])) {
-      let subtemas = [...new Set(banco[tema].map(p => p.subtema || "General"))];
+    // === Subtemas colapsables (desde colección Subtemas) ===
+    if (tema !== "__falladas__") {
+      let subtemas = [];
 
-      // "General" siempre primero, el resto orden natural
-      subtemas = subtemas.sort((a, b) => {
-        if (a === "General") return -1;
-        if (b === "General") return 1;
-        return ordenNatural(a, b);
-      });
+      try {
+        if (window.db && window.db.collection) {
+          // Cargar subtemas desde Firebase
+          // NOTA: esto es síncrono visualmente, pero los datos se llenan cuando llegan
+          window.db.collection("Subtemas").get().then(snapshot => {
+            snapshot.forEach(doc => {
+              const data = doc.data();
+              if (data && data.temaId === tema) {
+                subtemas.push(data.nombre);
+              }
+            });
 
-      if (subtemas.length > 0) {
-        // Botón de colapsar/expandir
-        const toggleBtn = document.createElement("button");
-        toggleBtn.textContent = "▸";
-        toggleBtn.style.marginLeft = "6px";
-        toggleBtn.style.fontSize = "12px";
-        toggleBtn.style.padding = "2px 6px";
-        toggleBtn.style.cursor = "pointer";
-
-        label.appendChild(toggleBtn);
-
-        const contSub = document.createElement("div");
-        contSub.style.marginLeft = "18px";
-        contSub.style.marginTop = "4px";
-        contSub.style.display = "none"; // colapsado por defecto
-
-        toggleBtn.onclick = () => {
-          const abierto = contSub.style.display === "block";
-          contSub.style.display = abierto ? "none" : "block";
-          toggleBtn.textContent = abierto ? "▸" : "▾";
-        };
-
-        subtemas.forEach(sub => {
-          const subLabel = document.createElement("label");
-          subLabel.style.display = "block";
-          subLabel.style.fontWeight = "400";
-
-          const subCb = document.createElement("input");
-          subCb.type = "checkbox";
-          subCb.value = tema + "||" + sub;
-          subCb.dataset.tipo = "subtema";
-          subCb.addEventListener("change", () => {
-            const subChecks = contSub.querySelectorAll('input[data-tipo="subtema"]');
-            const algunoMarcado = Array.from(subChecks).some(sc => sc.checked);
-            checkbox.checked = algunoMarcado;
-
-            actualizarEstadoBotonEmpezar();
+            pintarSubtemas(tema, subtemas, bloqueTema, checkbox);
           });
-
-          subLabel.appendChild(subCb);
-          subLabel.appendChild(document.createTextNode(" " + sub));
-
-          contSub.appendChild(subLabel);
-        });
-
-        bloqueTema.appendChild(contSub);
+        } else if (Array.isArray(banco[tema])) {
+          // Fallback al banco local
+          subtemas = [...new Set(banco[tema].map(p => p.subtema || "General"))];
+          pintarSubtemas(tema, subtemas, bloqueTema, checkbox);
+        }
+      } catch (e) {
+        // Fallback si falla Firebase
+        if (Array.isArray(banco[tema])) {
+          subtemas = [...new Set(banco[tema].map(p => p.subtema || "General"))];
+          pintarSubtemas(tema, subtemas, bloqueTema, checkbox);
+        }
       }
     }
 
     contenedor.appendChild(bloqueTema);
   });
   actualizarEstadoBotonEmpezar();
+}
+
+
+function pintarSubtemas(tema, subtemas, bloqueTema, checkbox) {
+  if (!subtemas || subtemas.length === 0) return;
+
+  // Orden: General primero, resto natural
+  subtemas = subtemas.sort((a, b) => {
+    if (a === "General") return -1;
+    if (b === "General") return 1;
+    return ordenNatural(a, b);
+  });
+
+  const label = bloqueTema.querySelector("label");
+
+  // Botón colapsable
+  const toggleBtn = document.createElement("button");
+  toggleBtn.textContent = "▸";
+  toggleBtn.style.marginLeft = "6px";
+  toggleBtn.style.fontSize = "12px";
+  toggleBtn.style.padding = "2px 6px";
+  toggleBtn.style.cursor = "pointer";
+
+  label.appendChild(toggleBtn);
+
+  const contSub = document.createElement("div");
+  contSub.style.marginLeft = "18px";
+  contSub.style.marginTop = "4px";
+  contSub.style.display = "none";
+
+  toggleBtn.onclick = () => {
+    const abierto = contSub.style.display === "block";
+    contSub.style.display = abierto ? "none" : "block";
+    toggleBtn.textContent = abierto ? "▸" : "▾";
+  };
+
+  subtemas.forEach(sub => {
+    const subLabel = document.createElement("label");
+    subLabel.style.display = "block";
+    subLabel.style.fontWeight = "400";
+
+    const subCb = document.createElement("input");
+    subCb.type = "checkbox";
+    subCb.value = tema + "||" + sub;
+    subCb.dataset.tipo = "subtema";
+    subCb.addEventListener("change", () => {
+      const subChecks = contSub.querySelectorAll('input[data-tipo="subtema"]');
+      const algunoMarcado = Array.from(subChecks).some(sc => sc.checked);
+      checkbox.checked = algunoMarcado;
+      actualizarEstadoBotonEmpezar();
+    });
+
+    subLabel.appendChild(subCb);
+    subLabel.appendChild(document.createTextNode(" " + sub));
+    contSub.appendChild(subLabel);
+  });
+
+  bloqueTema.appendChild(contSub);
 }
 
 
@@ -1428,8 +1489,14 @@ function resetearFallosPorTema() {
     return;
   }
 
-  if (!confirm(`¿Restablecer estadísticas del tema "${tema}"?`)) {
-    return;
+  let resetMarcadas = false;
+  const confirmar = confirm(
+    `¿Restablecer estadísticas del tema "${tema}"?\n\nPulsa Aceptar para continuar.`
+  );
+  if (!confirmar) return;
+
+  if (confirm(`¿Quieres también eliminar las preguntas marcadas de este tema?`)) {
+    resetMarcadas = true;
   }
 
   // Resetear fallos de las preguntas del tema
@@ -1443,6 +1510,19 @@ function resetearFallosPorTema() {
       }
     }
   });
+
+  // Eliminar preguntas marcadas de este tema si el usuario lo pidió
+  if (resetMarcadas && window.usuarioActual && window.db) {
+    const uid = window.usuarioActual.uid;
+
+    banco[tema].forEach(p => {
+      if (p.id) {
+        deleteDoc(
+          doc(window.db, "usuarios", uid, "marcadas", p.id)
+        ).catch(() => {});
+      }
+    });
+  }
 
   // Limpiar del banco de falladas las de ese tema
   if (banco["__falladas__"]) {
@@ -1747,6 +1827,59 @@ window.addEventListener("beforeunload", function (e) {
     e.returnValue = "";
   }
 });
+
+// ===== SISTEMA DE PREGUNTAS MARCADAS POR USUARIO =====
+
+async function marcarPreguntaRemoto(idPregunta) {
+  try {
+    if (!window.usuarioActual || !window.db) return;
+    const uid = window.usuarioActual.uid;
+
+    await setDoc(
+      doc(window.db, "usuarios", uid, "marcadas", idPregunta),
+      {
+        preguntaId: idPregunta,
+        fecha: Date.now()
+      }
+    );
+  } catch (e) {
+    console.warn("No se pudo marcar la pregunta:", e);
+  }
+}
+
+async function desmarcarPreguntaRemoto(idPregunta) {
+  try {
+    if (!window.usuarioActual || !window.db) return;
+    const uid = window.usuarioActual.uid;
+
+    await deleteDoc(
+      doc(window.db, "usuarios", uid, "marcadas", idPregunta)
+    );
+  } catch (e) {
+    console.warn("No se pudo desmarcar la pregunta:", e);
+  }
+}
+
+function toggleMarcaPregunta(index) {
+  const p = preguntasTest[index];
+  if (!p || !p.id) return;
+
+  const zonaTest = document.getElementById("zonaTest");
+  if (!zonaTest) return;
+
+  const bloques = zonaTest.querySelectorAll("div");
+  const div = bloques[index];
+  if (!div) return;
+
+  const check = div.querySelector(".marcar-pregunta");
+  if (!check) return;
+
+  if (check.checked) {
+    marcarPreguntaRemoto(p.id);
+  } else {
+    desmarcarPreguntaRemoto(p.id);
+  }
+}
 
 window.mostrarPantallaInicial = mostrarPantallaInicial;
 window.mostrarPantallaTemas = mostrarPantallaTemas;
